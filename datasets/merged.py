@@ -100,6 +100,10 @@ class MergedDataset(BaseImageDataset):
             raise RuntimeError("'{}' is not available".format(self.dataset_dir))
         if self.is_train and not osp.exists(self.train_dir):
             raise RuntimeError("'{}' is not available".format(self.train_dir))
+        if not osp.exists(self.query_dir):
+            raise RuntimeError("'{}' is not available".format(self.query_dir))
+        if not osp.exists(self.gallery_dir):
+            raise RuntimeError("'{}' is not available".format(self.gallery_dir))
 
     def _process_dir(self, dir_path, relabel=False):
         img_paths = glob.glob(osp.join(dir_path, "*.jpg")) + \
@@ -187,18 +191,30 @@ class MergedDataset(BaseImageDataset):
         return dataset, dataset_pair
 
     def _extract_pid(self, img_path):
+        import hashlib
         import re
         filename = osp.basename(img_path)
-        name_without_ext = filename.split('.')[0]
+        name_without_ext = osp.splitext(filename)[0]
+        normalized = name_without_ext.lower()
         
-        match = re.match(r'^(\d+)_s\d+c\d+_(opt|sar)$', name_without_ext)
-        if match:
-            try:
-                return int(match.group(1))
-            except ValueError:
-                pass
+        patterns = [
+            r'^(\d+)_s\d+c\d+_(opt|sar)$',
+            r'^(\d+)_s\d+c\d+$',
+            r'^(\d+)[_-]',
+            r'^(\d+)$',
+            r'(?:pid|id)[_-]?(\d+)',
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, normalized)
+            if match:
+                try:
+                    return int(match.group(1))
+                except ValueError:
+                    pass
         
-        return hash(name_without_ext) % 1000000
+        normalized = re.sub(r'[_-]?(opt|rgb|visible|vis|sar|ir)$', '', normalized)
+        stable_hash = hashlib.md5(normalized.encode("utf-8")).hexdigest()
+        return int(stable_hash[:12], 16) % 1000000
 
     def _extract_camid(self, img_path):
         if self._is_sar(img_path):

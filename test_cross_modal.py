@@ -1,8 +1,12 @@
 import argparse
 import json
 import os
+import random
 import sys
 import time
+
+import numpy as np
+import torch
 
 from config import cfg
 from datasets import make_dataloader
@@ -96,10 +100,21 @@ def parse_args():
         type=int,
     )
     parser.add_argument(
+        "--seed",
+        default=None,
+        help="random seed used before model initialization and feature extraction",
+        type=int,
+    )
+    parser.add_argument(
         "--save_path",
         default=None,
-        help="path to save metrics, matrices, and top-k matches",
+        help="path to save metrics and top-k matches",
         type=str,
+    )
+    parser.add_argument(
+        "--save_matrices",
+        action="store_true",
+        help="save full metric/distance/match .npy matrices; this can require several GB",
     )
     parser.add_argument(
         "--weight_path",
@@ -127,6 +142,17 @@ def configure(args):
 
     os.environ["CUDA_VISIBLE_DEVICES"] = cfg.MODEL.DEVICE_ID
     return cfg
+
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def split_query_gallery(features, pids, camids, paths, num_query):
@@ -189,6 +215,7 @@ def run_single_metric(args, pipeline, data, progress, save_path):
         g_paths=g_paths,
         topk=args.topk,
         save_path=save_path,
+        save_matrices=args.save_matrices,
     )
     progress.complete_step(3, "metric matrix ready")
     progress.complete_step(4, "metrics ready")
@@ -231,6 +258,7 @@ def run_metric_comparison(args, pipeline, data, save_path):
             g_paths=g_paths,
             topk=args.topk,
             save_path=metric_save_path,
+            save_matrices=args.save_matrices,
         )
 
     if save_path:
@@ -241,12 +269,18 @@ def run_metric_comparison(args, pipeline, data, save_path):
     print("\n" + "=" * 70)
     print("COMPARISON SUMMARY")
     print("=" * 70)
-    print(f"{'Metric':<20} {'mAP':<10} {'Rank-1':<10} {'Precision':<10} {'F1':<10}")
+    print(
+        f"{'Metric':<20} {'mAP':<10} {'Rank-1':<10} "
+        f"{'ThrTop1':<10} {'ThrTop5':<10} {'Precision':<10} {'F1':<10}"
+    )
     for metric, result in results.items():
+        threshold_topk = result.get("threshold_topk", {})
         print(
             f"{metric:<20} "
             f"{result['reid'].get('mAP', 0):<10.4f} "
             f"{result['reid'].get('rank_1', 0):<10.4f} "
+            f"{threshold_topk.get('top_1_accuracy', 0):<10.4f} "
+            f"{threshold_topk.get('top_5_accuracy', 0):<10.4f} "
             f"{result['basic'].get('precision', 0):<10.4f} "
             f"{result['basic'].get('f1', 0):<10.4f}"
         )
@@ -256,6 +290,9 @@ def run_metric_comparison(args, pipeline, data, save_path):
 def main():
     args = parse_args()
     configure(args)
+    seed = args.seed if args.seed is not None else cfg.SOLVER.SEED
+    set_seed(seed)
+    print(f"Random seed: {seed}")
 
     if args.classifier_type != "threshold" and not args.supervised_matcher:
         raise ValueError(

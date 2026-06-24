@@ -91,7 +91,27 @@ def make_dataloader(cfg, is_train=True):
     dataset = __factory[cfg.DATASETS.NAMES](
         root=cfg.DATASETS.ROOT_DIR, is_train=is_train
     )
+    if len(dataset.query) == 0:
+        raise RuntimeError(
+            "Query set is empty. Check DATASETS.ROOT_DIR and query directory layout."
+        )
+    if len(dataset.gallery) == 0:
+        raise RuntimeError(
+            "Gallery set is empty. Check DATASETS.ROOT_DIR and bounding_box_test directory layout."
+        )
+    query_pids = {pid for _, pid, _, _ in dataset.query}
+    gallery_pids = {pid for _, pid, _, _ in dataset.gallery}
+    if query_pids and gallery_pids and len(query_pids & gallery_pids) == 0:
+        raise RuntimeError(
+            "No overlapping IDs between query and gallery. CMC/mAP evaluation would be invalid."
+        )
+
     if is_train:
+        if len(dataset.train) == 0 or dataset.num_train_pids == 0:
+            raise RuntimeError(
+                "Training set is empty. For MergedDataset, expected "
+                "bounding_box_train/opt and bounding_box_train/sar with valid image files."
+            )
         train_set = ImageDataset(dataset.train, train_transforms)
         train_set_normal = ImageDataset(dataset.train, val_transforms)
         num_classes = dataset.num_train_pids
@@ -207,6 +227,10 @@ def make_dataloader_pair(cfg):
     train_set_pair = ImageDataset(dataset.train_pair, train_transforms, pair=True)
     num_classes = dataset.num_train_pair_pids
     cam_num = dataset.num_train_pair_cams
+    if len(dataset.train_pair) == 0 or num_classes == 0:
+        raise RuntimeError(
+            "Pair training set is empty. Check that each training ID has both opt/RGB and SAR images."
+        )
 
     if cfg.SOLVER.IMS_PER_BATCH % 2 != 0:
         raise ValueError("cfg.SOLVER.IMS_PER_BATCH should be even number")

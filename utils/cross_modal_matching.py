@@ -75,14 +75,21 @@ class CrossModalMatchingPipeline:
         g_paths=None,
         topk=10,
         save_path=None,
+        save_matrices=False,
     ):
         if self.matcher is None:
             raise ValueError("Matcher is not set up. Call setup_matcher() first.")
 
         eval_start = time.time()
-        print(f"      Computing metric matrix ({q_features.shape[0]} x {g_features.shape[0]})...")
-        sys.stdout.flush()
-        metric_matrix = compute_distance(q_features, g_features, metric=self.matcher.distance_metric)
+        cached_values = getattr(self.matcher, "_last_values", None)
+        expected_shape = (q_features.shape[0], g_features.shape[0])
+        if cached_values is not None and cached_values.shape == expected_shape:
+            print(f"      Reusing cached metric matrix ({expected_shape[0]} x {expected_shape[1]})...")
+            metric_matrix = cached_values
+        else:
+            print(f"      Computing metric matrix ({expected_shape[0]} x {expected_shape[1]})...")
+            sys.stdout.flush()
+            metric_matrix = compute_distance(q_features, g_features, metric=self.matcher.distance_metric)
         distmat = to_distance_matrix(metric_matrix, self.matcher.distance_metric)
         self.matcher._last_values = metric_matrix
         self._metric_matrix = metric_matrix
@@ -97,16 +104,35 @@ class CrossModalMatchingPipeline:
         print(f"      Threshold matching computed in {time.time() - match_start:.2f}s")
         sys.stdout.flush()
 
+        rank_start = time.time()
+        print("      Sorting gallery candidates for ranking metrics...")
+        sys.stdout.flush()
+        indices = np.argsort(distmat, axis=1)
+        print(f"      Ranking sort completed in {time.time() - rank_start:.2f}s")
+        sys.stdout.flush()
+
         basic_metrics = None
         reid_metrics = None
+        threshold_topk_metrics = None
         if q_pids is not None and g_pids is not None:
             basic_metrics = self._compute_basic_metrics(match_matrix, q_pids, g_pids)
+            threshold_topk_metrics = self._compute_threshold_topk_metrics(
+                distmat,
+                match_matrix,
+                q_pids,
+                g_pids,
+                q_camids=q_camids,
+                g_camids=g_camids,
+                topks=(1, 5),
+                indices=indices,
+            )
             reid_metrics = self._compute_reid_metrics(
                 distmat,
                 q_pids,
                 g_pids,
                 q_camids=q_camids,
                 g_camids=g_camids,
+                indices=indices,
             )
 
         self._top_matches = self._build_top_matches(
@@ -118,24 +144,27 @@ class CrossModalMatchingPipeline:
             q_paths=q_paths,
             g_paths=g_paths,
             topk=topk,
+            indices=indices,
         )
 
         self.results = {
             "matching": matching_summary,
             "basic": basic_metrics or {},
+            "threshold_topk": threshold_topk_metrics or {},
             "reid": reid_metrics or {},
             "classifier_params": self.matcher.get_params(),
             "distance_metric": self.matcher.distance_metric,
             "metric_type": metric_type(self.matcher.distance_metric),
             "classifier_type": self.matcher.classifier_type,
             "topk": int(topk),
+            "save_matrices": bool(save_matrices),
         }
 
         print(f"      Evaluation completed in {time.time() - eval_start:.2f}s")
         sys.stdout.flush()
 
         if save_path:
-            self.save_results(save_path)
+            self.save_results(save_path, save_matrices=save_matrices)
 
         return self.results
 
@@ -171,6 +200,8 @@ class CrossModalMatchingPipeline:
         fp = int(np.sum((pred == 1) & (gt == 0)))
         fn = int(np.sum((pred == 0) & (gt == 1)))
         total = tp + tn + fp + fn
+        positive_total = tp + fn
+        negative_total = tn + fp
 
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
@@ -185,6 +216,9 @@ class CrossModalMatchingPipeline:
             "specificity": float(specificity),
             "sensitivity": float(recall),
             "balanced_accuracy": float((recall + specificity) / 2.0),
+            "positive_rate": float(positive_total / total) if total > 0 else 0.0,
+            "negative_rate": float(negative_total / total) if total > 0 else 0.0,
+            "all_negative_accuracy": float(negative_total / total) if total > 0 else 0.0,
             "tn": tn,
             "fp": fp,
             "fn": fn,
@@ -192,7 +226,90 @@ class CrossModalMatchingPipeline:
         }
 
     @staticmethod
-    def _compute_reid_metrics(distmat, q_pids, g_pids, q_camids=None, g_camids=None, max_rank=50):
+    def _compute_threshold_topk_metrics(
+        distmat,
+        match_matrix,
+        q_pids,
+        g_pids,
+        q_camids=None,
+        g_camids=None,
+        topks=(1, 5),
+        indices=None,
+    ):
+        q_pids = np.asarray(q_pids)
+        g_pids = np.asarray(g_pids)
+        q_camids = np.asarray(q_camids) if q_camids is not None else None
+        g_camids = np.asarray(g_camids) if g_camids is not None else None
+        topks = tuple(sorted(set(int(k) for k in topks if int(k) > 0)))
+        if not topks:
+            return {}
+
+        max_k = min(max(topks), distmat.shape[1])
+        if indices is None:
+            indices = np.argsort(distmat, axis=1)
+        metrics = {
+            "valid_queries": 0,
+            "note": "Top-k accuracy requires the correct gallery ID to be within top-k and accepted by threshold.",
+        }
+        hit_counts = {k: 0 for k in topks}
+        covered_counts = {k: 0 for k in topks}
+        accepted_counts = {k: 0 for k in topks}
+        correct_accepted_counts = {k: 0 for k in topks}
+
+        for q_idx in range(distmat.shape[0]):
+            q_pid = q_pids[q_idx]
+            order = indices[q_idx]
+            keep = np.ones_like(order, dtype=bool)
+            if q_camids is not None and g_camids is not None:
+                keep = ~((g_pids[order] == q_pid) & (g_camids[order] == q_camids[q_idx]))
+            order = order[keep]
+
+            if order.size == 0:
+                continue
+            if not np.any(g_pids[order] == q_pid):
+                continue
+
+            metrics["valid_queries"] += 1
+            top_order = order[:max_k]
+            accepted = match_matrix[q_idx, top_order].astype(bool)
+            correct = g_pids[top_order] == q_pid
+
+            for k in topks:
+                k_eff = min(k, len(top_order))
+                if k_eff <= 0:
+                    continue
+                accepted_k = accepted[:k_eff]
+                correct_k = correct[:k_eff]
+                accepted_counts[k] += int(np.sum(accepted_k))
+                correct_accepted_counts[k] += int(np.sum(accepted_k & correct_k))
+                covered_counts[k] += int(np.any(accepted_k))
+                hit_counts[k] += int(np.any(accepted_k & correct_k))
+
+        valid_queries = metrics["valid_queries"]
+        for k in topks:
+            hit = hit_counts[k]
+            covered = covered_counts[k]
+            accepted_total = accepted_counts[k]
+            correct_accepted = correct_accepted_counts[k]
+            metrics[f"top_{k}_accuracy"] = float(hit / valid_queries) if valid_queries > 0 else 0.0
+            metrics[f"top_{k}_coverage"] = float(covered / valid_queries) if valid_queries > 0 else 0.0
+            metrics[f"top_{k}_accepted_pairs"] = int(accepted_total)
+            metrics[f"top_{k}_correct_accepted_pairs"] = int(correct_accepted)
+            metrics[f"top_{k}_precision"] = (
+                float(correct_accepted / accepted_total) if accepted_total > 0 else 0.0
+            )
+        return metrics
+
+    @staticmethod
+    def _compute_reid_metrics(
+        distmat,
+        q_pids,
+        g_pids,
+        q_camids=None,
+        g_camids=None,
+        max_rank=50,
+        indices=None,
+    ):
         q_pids = np.asarray(q_pids)
         g_pids = np.asarray(g_pids)
         q_camids = np.asarray(q_camids) if q_camids is not None else None
@@ -200,7 +317,8 @@ class CrossModalMatchingPipeline:
 
         num_q, num_g = distmat.shape
         max_rank = min(max_rank, num_g)
-        indices = np.argsort(distmat, axis=1)
+        if indices is None:
+            indices = np.argsort(distmat, axis=1)
         matches = (g_pids[indices] == q_pids[:, None]).astype(np.int32)
 
         all_cmc = []
@@ -265,9 +383,12 @@ class CrossModalMatchingPipeline:
         q_paths=None,
         g_paths=None,
         topk=10,
+        indices=None,
     ):
         topk = min(int(topk), distmat.shape[1])
-        order = np.argsort(distmat, axis=1)[:, :topk]
+        if indices is None:
+            indices = np.argsort(distmat, axis=1)
+        order = indices[:, :topk]
         q_pids = np.asarray(q_pids) if q_pids is not None else None
         g_pids = np.asarray(g_pids) if g_pids is not None else None
         rows = []
@@ -293,18 +414,20 @@ class CrossModalMatchingPipeline:
                 rows.append(row)
         return rows
 
-    def save_results(self, save_path):
+    def save_results(self, save_path, save_matrices=False):
         os.makedirs(save_path, exist_ok=True)
 
         with open(os.path.join(save_path, "metrics.json"), "w", encoding="utf-8") as f:
             json.dump(self.results, f, indent=2)
 
-        if self._metric_matrix is not None:
+        if save_matrices and self._metric_matrix is not None:
             np.save(os.path.join(save_path, "metric_matrix.npy"), self._metric_matrix)
-        if self._distmat is not None:
+        if save_matrices and self._distmat is not None:
             np.save(os.path.join(save_path, "distance_matrix.npy"), self._distmat)
-        if self._match_matrix is not None:
+        if save_matrices and self._match_matrix is not None:
             np.save(os.path.join(save_path, "match_matrix.npy"), self._match_matrix)
+        if not save_matrices:
+            print("Full matrices were not saved. Pass --save_matrices to keep .npy matrices.")
         if self._top_matches:
             csv_path = os.path.join(save_path, "top_matches.csv")
             with open(csv_path, "w", newline="", encoding="utf-8") as f:
@@ -340,6 +463,18 @@ class CrossModalMatchingPipeline:
             print(f"Precision:         {basic.get('precision', 0):.4f}")
             print(f"Recall:            {basic.get('recall', 0):.4f}")
             print(f"F1:                {basic.get('f1', 0):.4f}")
+            print(f"Balanced Acc:      {basic.get('balanced_accuracy', 0):.4f}")
+            print(f"Positive rate:     {basic.get('positive_rate', 0):.4f}")
+            print(f"All-neg baseline:  {basic.get('all_negative_accuracy', 0):.4f}")
+
+        threshold_topk = self.results.get("threshold_topk", {})
+        if threshold_topk:
+            print("\n--- Threshold Top-k Metrics ---")
+            for k in [1, 5]:
+                if f"top_{k}_accuracy" in threshold_topk:
+                    print(f"Top-{k} Acc:        {threshold_topk[f'top_{k}_accuracy']:.4f}")
+                    print(f"Top-{k} Coverage:   {threshold_topk[f'top_{k}_coverage']:.4f}")
+                    print(f"Top-{k} Precision:  {threshold_topk[f'top_{k}_precision']:.4f}")
 
         reid = self.results.get("reid", {})
         if reid:
@@ -358,6 +493,7 @@ class CrossModalMatchingPipeline:
         distance_metric="cosine_distance",
         classifier_type="threshold",
         save_path=None,
+        save_matrices=False,
         **matcher_kwargs,
     ):
         print("=" * 70)
@@ -388,6 +524,7 @@ class CrossModalMatchingPipeline:
             q_paths=q_paths,
             g_paths=g_paths,
             save_path=save_path,
+            save_matrices=save_matrices,
         )
         self.print_results()
         return results
@@ -401,6 +538,7 @@ def run_cross_modal_matching(
     classifier_type="threshold",
     weight_path=None,
     save_path=None,
+    save_matrices=False,
     **matcher_kwargs,
 ):
     pipeline = CrossModalMatchingPipeline(cfg, weight_path)
@@ -410,6 +548,7 @@ def run_cross_modal_matching(
         distance_metric=distance_metric,
         classifier_type=classifier_type,
         save_path=save_path,
+        save_matrices=save_matrices,
         **matcher_kwargs,
     )
 
@@ -422,6 +561,7 @@ def compare_distance_metrics(
     classifier_type="threshold",
     save_path=None,
     weight_path=None,
+    save_matrices=False,
     **matcher_kwargs,
 ):
     if metrics is None:
@@ -454,6 +594,7 @@ def compare_distance_metrics(
             q_paths=q_paths,
             g_paths=g_paths,
             save_path=os.path.join(save_path, metric) if save_path else None,
+            save_matrices=save_matrices,
         )
         results[metric] = result
 
@@ -465,12 +606,18 @@ def compare_distance_metrics(
     print(f"\n{'=' * 70}")
     print("COMPARISON SUMMARY")
     print(f"{'=' * 70}")
-    print(f"{'Metric':<20} {'mAP':<10} {'Rank-1':<10} {'Precision':<10} {'F1':<10}")
+    print(
+        f"{'Metric':<20} {'mAP':<10} {'Rank-1':<10} "
+        f"{'ThrTop1':<10} {'ThrTop5':<10} {'Precision':<10} {'F1':<10}"
+    )
     for metric, result in results.items():
+        threshold_topk = result.get("threshold_topk", {})
         print(
             f"{metric:<20} "
             f"{result['reid'].get('mAP', 0):<10.4f} "
             f"{result['reid'].get('rank_1', 0):<10.4f} "
+            f"{threshold_topk.get('top_1_accuracy', 0):<10.4f} "
+            f"{threshold_topk.get('top_5_accuracy', 0):<10.4f} "
             f"{result['basic'].get('precision', 0):<10.4f} "
             f"{result['basic'].get('f1', 0):<10.4f}"
         )

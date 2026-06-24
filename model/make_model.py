@@ -291,15 +291,23 @@ class build_transformer(nn.Module):
             param_dict = torch.load(trained_path, map_location=torch.device('cpu'))
         if "state_dict" in param_dict:
             param_dict = param_dict["state_dict"]
+
+        model_state = self.state_dict()
+        loaded_keys = set()
+        partial_keys = []
+        skipped_classifier = []
+        skipped_unexpected = []
+        skipped_shape = []
             
         for i in param_dict:
             key = i.replace("module.", "")
             # 跳过不需要的分类头或之前报错的 logit_scale
             if key.startswith("classifier") or key == "logit_scale":
+                skipped_classifier.append(key)
                 continue
                 
-            if key in self.state_dict():
-                target_shape = self.state_dict()[key].shape
+            if key in model_state:
+                target_shape = model_state[key].shape
                 source_shape = param_dict[i].shape
                 
                 # 如果维度不一致（比如 130 vs 129）
@@ -308,13 +316,48 @@ class build_transformer(nn.Module):
                     # 针对 pos_embed 这种三维张量 [1, N, 768]，只拷贝前面的部分
                     if len(target_shape) == 3 and len(source_shape) == 3:
                         min_len = min(target_shape[1], source_shape[1])
-                        self.state_dict()[key][:, :min_len, :].copy_(param_dict[i][:, :min_len, :])
+                        model_state[key][:, :min_len, :].copy_(param_dict[i][:, :min_len, :])
+                        loaded_keys.add(key)
+                        partial_keys.append(key)
                     else:
                         print(f"Skipping parameter {key} due to complex shape mismatch.")
+                        skipped_shape.append((key, tuple(source_shape), tuple(target_shape)))
                     continue
                     
                 # 维度一致的参数直接正常拷贝
-                self.state_dict()[key].copy_(param_dict[i])
+                model_state[key].copy_(param_dict[i])
+                loaded_keys.add(key)
+            else:
+                skipped_unexpected.append(key)
+
+        missing_keys = [
+            key
+            for key in model_state.keys()
+            if key not in loaded_keys
+            and not key.startswith("classifier")
+            and key != "logit_scale"
+        ]
+        print(
+            "Loaded pretrained model from {} | loaded: {} | partial: {} | "
+            "skipped classifier/logit_scale: {} | unexpected: {} | "
+            "shape skipped: {} | missing non-head: {}".format(
+                trained_path,
+                len(loaded_keys),
+                len(partial_keys),
+                len(skipped_classifier),
+                len(skipped_unexpected),
+                len(skipped_shape),
+                len(missing_keys),
+            )
+        )
+        if partial_keys:
+            print("  Partial loaded keys: {}".format(partial_keys[:10]))
+        if skipped_shape:
+            print("  Shape-skipped keys (first 10): {}".format(skipped_shape[:10]))
+        if skipped_unexpected:
+            print("  Unexpected checkpoint keys (first 10): {}".format(skipped_unexpected[:10]))
+        if missing_keys:
+            print("  Missing non-head model keys (first 20): {}".format(missing_keys[:20]))
 
     def load_param_finetune(self, model_path):
         param_dict = torch.load(model_path)
