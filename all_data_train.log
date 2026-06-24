@@ -1,0 +1,548 @@
+nohup: ignoring input
+2026-06-15 20:54:06 transreid INFO: Saving model in the path :./logs/SDF-Net_Multi/
+2026-06-15 20:54:06 transreid INFO: Namespace(config_file='configs/SDF-Net_Multi.yml', opts=[], local_rank=0)
+2026-06-15 20:54:06 transreid INFO: Loaded configuration file configs/SDF-Net_Multi.yml
+2026-06-15 20:54:06 transreid INFO: 
+MODEL:
+  PRETRAIN_CHOICE: 'imagenet'
+  PRETRAIN_PATH: "/ssd_data/lixiang_data/SDF-Net/logs/Pretrain_Backbone_2/custom_vit_b_pretrain_ep100.pth"
+  METRIC_LOSS_TYPE: 'triplet'
+  IF_LABELSMOOTH: 'off'
+  IF_WITH_CENTER: 'no'
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  TRANSFORMER_TYPE: 'vit_base_patch16_224_TransOSS'
+  STRIDE_SIZE: [16, 16]
+  MIE: True
+  MIE_COE: 3.0
+  SSE: True
+  PAIR: False
+  DISENTANGLE: True
+  ABLATION_MODE: "sum"
+  ORTH_LOSS_WEIGHT: 10.0
+  STRUCT_LOSS_WEIGHT: 0.5
+  STRUCT_LAYER_INDEX: 6
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+  PROB: 0.5
+  RE_PROB: 0.2
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+
+DATASETS:
+  NAMES: ('Merged')
+  ROOT_DIR: ('/ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 150
+  BASE_LR: 0.0005
+  IMS_PER_BATCH: 64
+  WARMUP_METHOD: 'linear'
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: 10
+  LOG_PERIOD: 50
+  EVAL_PERIOD: 5
+  WEIGHT_DECAY:  1e-4
+  WEIGHT_DECAY_BIAS: 1e-4
+  BIAS_LR_FACTOR: 2
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 1
+  RE_RANKING: False
+  WEIGHT: "/ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_Multi/best.pth"
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: "./logs/SDF-Net_Multi/"
+
+2026-06-15 20:54:06 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: Merged
+  ROOT_DIR: /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+  PROB: 0.5
+  RE_PROB: 0.2
+  SIZE_TEST: [256, 128]
+  SIZE_TRAIN: [256, 128]
+MODEL:
+  ABLATION_MODE: sum
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DISENTANGLE: True
+  DIST_TRAIN: False
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  MIE: True
+  MIE_COE: 3.0
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  ORTH_LOSS_WEIGHT: 10.0
+  PAIR: False
+  PRETRAIN_CHOICE: imagenet
+  PRETRAIN_PATH: /ssd_data/lixiang_data/SDF-Net/logs/Pretrain_Backbone_2/custom_vit_b_pretrain_ep100.pth
+  SSE: True
+  STRIDE_SIZE: [16, 16]
+  STRUCT_LAYER_INDEX: 6
+  STRUCT_LOSS_WEIGHT: 0.5
+  TRANSFORMER_TYPE: vit_base_patch16_224_TransOSS
+  TRIPLET_LOSS_WEIGHT: 1.0
+OUTPUT_DIR: ./logs/SDF-Net_Multi/
+SOLVER:
+  BASE_LR: 0.0005
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 10
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 5
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 50
+  MARGIN: 0.3
+  MAX_EPOCHS: 150
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1949
+  STEPS: (40, 70)
+  WARMUP_EPOCHS: 5
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 1
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: /ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_Multi/best.pth
+/home/lixiang/miniconda3/envs/pytorch/lib/python3.9/site-packages/torch/nn/init.py:511: UserWarning: Initializing zero-element tensors is a no-op
+  warnings.warn("Initializing zero-element tensors is a no-op")
+=> Merged Dataset loaded
+Dataset statistics:
+  ----------------------------------------
+  subset   | # ids | # images | # cameras
+  ----------------------------------------
+  train    |     0 |        0 |         0
+  query    |   298 |      298 |         2
+  gallery  |   299 |      789 |         2
+  ----------------------------------------
+Number of RGB-SAR pair: 0
+  ----------------------------------------
+Current Ablation Mode: sum
+using Transformer_type: vit_base_patch16_224_TransOSS as a backbone
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using drop_out rate is : 0.0
+using attn_drop_out rate is : 0.0
+using drop_path rate is : 0.1
+Resizing pos_embed: torch.Size([1, 197, 768]) -> torch.Size([1, 130, 768])
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 130, 768]) with height:16 width: 8
+Extending pos_embed token after resize
+patch_embed_SAR not in the pth
+Loading pretrained model from /ssd_data/lixiang_data/SDF-Net/logs/Pretrain_Backbone_2/custom_vit_b_pretrain_ep100.pth
+===========building transformer===========
+using soft triplet loss for training
+2026-06-15 20:54:08 transreid.train INFO: start training
+/ssd_data/lixiang_data/SDF-Net/processor/processor.py:131: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = amp.GradScaler()
+2026-06-15 20:54:08 transreid.train INFO: Epoch[1] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.04e-04
+2026-06-15 20:54:08 transreid.train INFO: Epoch[2] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.03e-04
+2026-06-15 20:54:08 transreid.train INFO: Epoch[3] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.02e-04
+2026-06-15 20:54:08 transreid.train INFO: Epoch[4] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.01e-04
+2026-06-15 20:54:08 transreid.train INFO: Epoch[5] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.99e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:54:15 transreid.train INFO: Validation Results - Epoch: 5
+2026-06-15 20:54:15 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:54:15 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:54:15 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:54:15 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:54:16 transreid.train INFO: Update Best mAP: 61.5% at Epoch 5
+2026-06-15 20:54:16 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-06-15 20:54:16 transreid.train INFO: Epoch[6] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.98e-04
+2026-06-15 20:54:16 transreid.train INFO: Epoch[7] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.97e-04
+2026-06-15 20:54:16 transreid.train INFO: Epoch[8] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.97e-04
+2026-06-15 20:54:16 transreid.train INFO: Epoch[9] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.96e-04
+2026-06-15 20:54:16 transreid.train INFO: Epoch[10] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.95e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:54:24 transreid.train INFO: Validation Results - Epoch: 10
+2026-06-15 20:54:24 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:54:24 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:54:24 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:54:24 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:54:24 transreid.train INFO: Epoch[11] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.93e-04
+2026-06-15 20:54:24 transreid.train INFO: Epoch[12] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.92e-04
+2026-06-15 20:54:24 transreid.train INFO: Epoch[13] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.91e-04
+2026-06-15 20:54:24 transreid.train INFO: Epoch[14] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.89e-04
+2026-06-15 20:54:24 transreid.train INFO: Epoch[15] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.88e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:54:32 transreid.train INFO: Validation Results - Epoch: 15
+2026-06-15 20:54:32 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:54:32 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:54:32 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:54:32 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:54:32 transreid.train INFO: Epoch[16] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.86e-04
+2026-06-15 20:54:32 transreid.train INFO: Epoch[17] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.84e-04
+2026-06-15 20:54:32 transreid.train INFO: Epoch[18] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.82e-04
+2026-06-15 20:54:32 transreid.train INFO: Epoch[19] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.81e-04
+2026-06-15 20:54:32 transreid.train INFO: Epoch[20] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.78e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:54:40 transreid.train INFO: Validation Results - Epoch: 20
+2026-06-15 20:54:40 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:54:40 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:54:40 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:54:40 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:54:40 transreid.train INFO: Epoch[21] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.76e-04
+2026-06-15 20:54:40 transreid.train INFO: Epoch[22] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.74e-04
+2026-06-15 20:54:40 transreid.train INFO: Epoch[23] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.72e-04
+2026-06-15 20:54:40 transreid.train INFO: Epoch[24] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.69e-04
+2026-06-15 20:54:40 transreid.train INFO: Epoch[25] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.67e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:54:48 transreid.train INFO: Validation Results - Epoch: 25
+2026-06-15 20:54:48 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:54:48 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:54:48 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:54:48 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:54:48 transreid.train INFO: Epoch[26] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.64e-04
+2026-06-15 20:54:48 transreid.train INFO: Epoch[27] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.61e-04
+2026-06-15 20:54:48 transreid.train INFO: Epoch[28] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.58e-04
+2026-06-15 20:54:48 transreid.train INFO: Epoch[29] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.55e-04
+2026-06-15 20:54:48 transreid.train INFO: Epoch[30] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.52e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:54:56 transreid.train INFO: Validation Results - Epoch: 30
+2026-06-15 20:54:56 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:54:56 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:54:56 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:54:56 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:54:56 transreid.train INFO: Epoch[31] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.49e-04
+2026-06-15 20:54:56 transreid.train INFO: Epoch[32] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.46e-04
+2026-06-15 20:54:56 transreid.train INFO: Epoch[33] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.43e-04
+2026-06-15 20:54:56 transreid.train INFO: Epoch[34] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.39e-04
+2026-06-15 20:54:56 transreid.train INFO: Epoch[35] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.36e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:55:04 transreid.train INFO: Validation Results - Epoch: 35
+2026-06-15 20:55:04 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:55:04 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:55:04 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:55:04 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:55:04 transreid.train INFO: Epoch[36] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.32e-04
+2026-06-15 20:55:04 transreid.train INFO: Epoch[37] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.29e-04
+2026-06-15 20:55:04 transreid.train INFO: Epoch[38] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.25e-04
+2026-06-15 20:55:04 transreid.train INFO: Epoch[39] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.21e-04
+2026-06-15 20:55:04 transreid.train INFO: Epoch[40] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.17e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:55:12 transreid.train INFO: Validation Results - Epoch: 40
+2026-06-15 20:55:12 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:55:12 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:55:12 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:55:12 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:55:12 transreid.train INFO: Epoch[41] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.14e-04
+2026-06-15 20:55:12 transreid.train INFO: Epoch[42] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.10e-04
+2026-06-15 20:55:12 transreid.train INFO: Epoch[43] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.05e-04
+2026-06-15 20:55:12 transreid.train INFO: Epoch[44] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.01e-04
+2026-06-15 20:55:12 transreid.train INFO: Epoch[45] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.97e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:55:20 transreid.train INFO: Validation Results - Epoch: 45
+2026-06-15 20:55:20 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:55:20 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:55:20 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:55:20 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:55:20 transreid.train INFO: Epoch[46] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.93e-04
+2026-06-15 20:55:20 transreid.train INFO: Epoch[47] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.89e-04
+2026-06-15 20:55:20 transreid.train INFO: Epoch[48] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.84e-04
+2026-06-15 20:55:20 transreid.train INFO: Epoch[49] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.80e-04
+2026-06-15 20:55:20 transreid.train INFO: Epoch[50] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.75e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:55:28 transreid.train INFO: Validation Results - Epoch: 50
+2026-06-15 20:55:28 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:55:28 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:55:28 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:55:28 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:55:28 transreid.train INFO: Epoch[51] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.71e-04
+2026-06-15 20:55:28 transreid.train INFO: Epoch[52] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.66e-04
+2026-06-15 20:55:28 transreid.train INFO: Epoch[53] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.61e-04
+2026-06-15 20:55:28 transreid.train INFO: Epoch[54] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.57e-04
+2026-06-15 20:55:28 transreid.train INFO: Epoch[55] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.52e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:55:36 transreid.train INFO: Validation Results - Epoch: 55
+2026-06-15 20:55:36 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:55:36 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:55:36 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:55:36 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:55:36 transreid.train INFO: Epoch[56] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.47e-04
+2026-06-15 20:55:36 transreid.train INFO: Epoch[57] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.42e-04
+2026-06-15 20:55:36 transreid.train INFO: Epoch[58] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.37e-04
+2026-06-15 20:55:36 transreid.train INFO: Epoch[59] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.33e-04
+2026-06-15 20:55:36 transreid.train INFO: Epoch[60] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.28e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:55:44 transreid.train INFO: Validation Results - Epoch: 60
+2026-06-15 20:55:44 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:55:44 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:55:44 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:55:44 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:55:44 transreid.train INFO: Epoch[61] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.23e-04
+2026-06-15 20:55:44 transreid.train INFO: Epoch[62] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.18e-04
+2026-06-15 20:55:44 transreid.train INFO: Epoch[63] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.13e-04
+2026-06-15 20:55:44 transreid.train INFO: Epoch[64] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.07e-04
+2026-06-15 20:55:44 transreid.train INFO: Epoch[65] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.02e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:55:52 transreid.train INFO: Validation Results - Epoch: 65
+2026-06-15 20:55:52 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:55:52 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:55:52 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:55:52 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:55:52 transreid.train INFO: Epoch[66] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.97e-04
+2026-06-15 20:55:52 transreid.train INFO: Epoch[67] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.92e-04
+2026-06-15 20:55:52 transreid.train INFO: Epoch[68] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.87e-04
+2026-06-15 20:55:52 transreid.train INFO: Epoch[69] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.82e-04
+2026-06-15 20:55:52 transreid.train INFO: Epoch[70] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.77e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:56:00 transreid.train INFO: Validation Results - Epoch: 70
+2026-06-15 20:56:00 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:56:00 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:56:00 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:56:00 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:56:00 transreid.train INFO: Epoch[71] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.71e-04
+2026-06-15 20:56:00 transreid.train INFO: Epoch[72] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.66e-04
+2026-06-15 20:56:00 transreid.train INFO: Epoch[73] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.61e-04
+2026-06-15 20:56:01 transreid.train INFO: Epoch[74] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.56e-04
+2026-06-15 20:56:01 transreid.train INFO: Epoch[75] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.51e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:56:08 transreid.train INFO: Validation Results - Epoch: 75
+2026-06-15 20:56:08 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:56:08 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:56:08 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:56:08 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:56:08 transreid.train INFO: Epoch[76] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.45e-04
+2026-06-15 20:56:08 transreid.train INFO: Epoch[77] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.40e-04
+2026-06-15 20:56:08 transreid.train INFO: Epoch[78] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.35e-04
+2026-06-15 20:56:08 transreid.train INFO: Epoch[79] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.30e-04
+2026-06-15 20:56:08 transreid.train INFO: Epoch[80] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.24e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:56:16 transreid.train INFO: Validation Results - Epoch: 80
+2026-06-15 20:56:16 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:56:16 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:56:16 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:56:16 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:56:16 transreid.train INFO: Epoch[81] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.19e-04
+2026-06-15 20:56:16 transreid.train INFO: Epoch[82] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.14e-04
+2026-06-15 20:56:17 transreid.train INFO: Epoch[83] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.09e-04
+2026-06-15 20:56:17 transreid.train INFO: Epoch[84] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.04e-04
+2026-06-15 20:56:17 transreid.train INFO: Epoch[85] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.99e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:56:24 transreid.train INFO: Validation Results - Epoch: 85
+2026-06-15 20:56:24 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:56:24 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:56:24 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:56:24 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:56:24 transreid.train INFO: Epoch[86] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.94e-04
+2026-06-15 20:56:24 transreid.train INFO: Epoch[87] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.88e-04
+2026-06-15 20:56:24 transreid.train INFO: Epoch[88] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.83e-04
+2026-06-15 20:56:24 transreid.train INFO: Epoch[89] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.78e-04
+2026-06-15 20:56:24 transreid.train INFO: Epoch[90] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.73e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:56:32 transreid.train INFO: Validation Results - Epoch: 90
+2026-06-15 20:56:32 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:56:32 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:56:32 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:56:32 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:56:32 transreid.train INFO: Epoch[91] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.68e-04
+2026-06-15 20:56:32 transreid.train INFO: Epoch[92] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.64e-04
+2026-06-15 20:56:32 transreid.train INFO: Epoch[93] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.59e-04
+2026-06-15 20:56:32 transreid.train INFO: Epoch[94] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.54e-04
+2026-06-15 20:56:32 transreid.train INFO: Epoch[95] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.49e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:56:40 transreid.train INFO: Validation Results - Epoch: 95
+2026-06-15 20:56:40 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:56:40 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:56:40 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:56:40 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:56:40 transreid.train INFO: Epoch[96] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.44e-04
+2026-06-15 20:56:40 transreid.train INFO: Epoch[97] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.40e-04
+2026-06-15 20:56:40 transreid.train INFO: Epoch[98] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.35e-04
+2026-06-15 20:56:40 transreid.train INFO: Epoch[99] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.30e-04
+2026-06-15 20:56:40 transreid.train INFO: Epoch[100] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.26e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:56:48 transreid.train INFO: Validation Results - Epoch: 100
+2026-06-15 20:56:48 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:56:48 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:56:48 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:56:48 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:56:48 transreid.train INFO: Epoch[101] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.21e-04
+2026-06-15 20:56:48 transreid.train INFO: Epoch[102] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.17e-04
+2026-06-15 20:56:48 transreid.train INFO: Epoch[103] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.12e-04
+2026-06-15 20:56:48 transreid.train INFO: Epoch[104] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.08e-04
+2026-06-15 20:56:48 transreid.train INFO: Epoch[105] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.04e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:56:56 transreid.train INFO: Validation Results - Epoch: 105
+2026-06-15 20:56:56 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:56:56 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:56:56 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:56:56 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:56:56 transreid.train INFO: Epoch[106] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 9.97e-05
+2026-06-15 20:56:56 transreid.train INFO: Epoch[107] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 9.55e-05
+2026-06-15 20:56:56 transreid.train INFO: Epoch[108] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 9.15e-05
+2026-06-15 20:56:56 transreid.train INFO: Epoch[109] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 8.75e-05
+2026-06-15 20:56:56 transreid.train INFO: Epoch[110] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 8.36e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:57:04 transreid.train INFO: Validation Results - Epoch: 110
+2026-06-15 20:57:04 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:57:04 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:57:04 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:57:04 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:57:04 transreid.train INFO: Epoch[111] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 7.97e-05
+2026-06-15 20:57:04 transreid.train INFO: Epoch[112] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 7.59e-05
+2026-06-15 20:57:04 transreid.train INFO: Epoch[113] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 7.22e-05
+2026-06-15 20:57:04 transreid.train INFO: Epoch[114] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 6.86e-05
+2026-06-15 20:57:04 transreid.train INFO: Epoch[115] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 6.51e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:57:12 transreid.train INFO: Validation Results - Epoch: 115
+2026-06-15 20:57:12 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:57:12 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:57:12 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:57:12 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:57:12 transreid.train INFO: Epoch[116] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 6.16e-05
+2026-06-15 20:57:12 transreid.train INFO: Epoch[117] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 5.83e-05
+2026-06-15 20:57:12 transreid.train INFO: Epoch[118] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 5.50e-05
+2026-06-15 20:57:12 transreid.train INFO: Epoch[119] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 5.18e-05
+2026-06-15 20:57:12 transreid.train INFO: Epoch[120] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.87e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:57:20 transreid.train INFO: Validation Results - Epoch: 120
+2026-06-15 20:57:20 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:57:20 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:57:20 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:57:20 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:57:20 transreid.train INFO: Epoch[121] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.56e-05
+2026-06-15 20:57:20 transreid.train INFO: Epoch[122] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.27e-05
+2026-06-15 20:57:20 transreid.train INFO: Epoch[123] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.98e-05
+2026-06-15 20:57:20 transreid.train INFO: Epoch[124] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.71e-05
+2026-06-15 20:57:20 transreid.train INFO: Epoch[125] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.44e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:57:28 transreid.train INFO: Validation Results - Epoch: 125
+2026-06-15 20:57:28 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:57:28 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:57:28 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:57:28 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:57:28 transreid.train INFO: Epoch[126] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.19e-05
+2026-06-15 20:57:28 transreid.train INFO: Epoch[127] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.94e-05
+2026-06-15 20:57:28 transreid.train INFO: Epoch[128] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.70e-05
+2026-06-15 20:57:28 transreid.train INFO: Epoch[129] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.47e-05
+2026-06-15 20:57:28 transreid.train INFO: Epoch[130] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.26e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:57:36 transreid.train INFO: Validation Results - Epoch: 130
+2026-06-15 20:57:36 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:57:36 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:57:36 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:57:36 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:57:36 transreid.train INFO: Epoch[131] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.05e-05
+2026-06-15 20:57:36 transreid.train INFO: Epoch[132] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.85e-05
+2026-06-15 20:57:36 transreid.train INFO: Epoch[133] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.66e-05
+2026-06-15 20:57:36 transreid.train INFO: Epoch[134] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.49e-05
+2026-06-15 20:57:36 transreid.train INFO: Epoch[135] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.32e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:57:44 transreid.train INFO: Validation Results - Epoch: 135
+2026-06-15 20:57:44 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:57:44 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:57:44 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:57:44 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:57:44 transreid.train INFO: Epoch[136] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.16e-05
+2026-06-15 20:57:44 transreid.train INFO: Epoch[137] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.02e-05
+2026-06-15 20:57:44 transreid.train INFO: Epoch[138] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 8.84e-06
+2026-06-15 20:57:44 transreid.train INFO: Epoch[139] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 7.59e-06
+2026-06-15 20:57:44 transreid.train INFO: Epoch[140] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 6.45e-06
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:57:52 transreid.train INFO: Validation Results - Epoch: 140
+2026-06-15 20:57:52 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:57:52 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:57:52 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:57:52 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:57:52 transreid.train INFO: Epoch[141] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 5.42e-06
+2026-06-15 20:57:52 transreid.train INFO: Epoch[142] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 4.49e-06
+2026-06-15 20:57:52 transreid.train INFO: Epoch[143] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 3.68e-06
+2026-06-15 20:57:52 transreid.train INFO: Epoch[144] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.97e-06
+2026-06-15 20:57:52 transreid.train INFO: Epoch[145] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 2.37e-06
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:58:00 transreid.train INFO: Validation Results - Epoch: 145
+2026-06-15 20:58:00 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:58:00 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:58:00 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:58:00 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:58:00 transreid.train INFO: Epoch[146] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.88e-06
+2026-06-15 20:58:00 transreid.train INFO: Epoch[147] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.49e-06
+2026-06-15 20:58:00 transreid.train INFO: Epoch[148] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.22e-06
+2026-06-15 20:58:00 transreid.train INFO: Epoch[149] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.05e-06
+2026-06-15 20:58:00 transreid.train INFO: Epoch[150] done. Loss: 0.000 (Base: 0.000, Orth: 0.000, Struct: 0.000), Acc: 0.000%, Lr: 1.00e-06
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-06-15 20:58:08 transreid.train INFO: Validation Results - Epoch: 150
+2026-06-15 20:58:08 transreid.train INFO: mAP: 61.5%
+2026-06-15 20:58:08 transreid.train INFO: CMC curve, Rank-1  : 80.3%
+2026-06-15 20:58:08 transreid.train INFO: CMC curve, Rank-5  : 88.5%
+2026-06-15 20:58:08 transreid.train INFO: CMC curve, Rank-10 : 91.0%
+2026-06-15 20:58:08 transreid.train INFO: ==================================================
+2026-06-15 20:58:08 transreid.train INFO: Training Finished! Best Validation Metrics:
+2026-06-15 20:58:08 transreid.train INFO: Best mAP: 61.5% (at Epoch 5)
+2026-06-15 20:58:08 transreid.train INFO: Corresponding Rank-1: 80.3%
+2026-06-15 20:58:08 transreid.train INFO: Corresponding Rank-5: 88.5%
+2026-06-15 20:58:08 transreid.train INFO: Corresponding Rank-10: 91.0%
+2026-06-15 20:58:08 transreid.train INFO: Best Weights Saved at: ./logs/SDF-Net_Multi/best.pth
+2026-06-15 20:58:08 transreid.train INFO: ==================================================

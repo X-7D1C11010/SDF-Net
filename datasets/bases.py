@@ -5,26 +5,48 @@ import cv2
 import numpy as np
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+# 解除 PIL 的像素限制，避免 DecompressionBombError
+Image.MAX_IMAGE_PIXELS = None
 
 
 def read_image(img_path):
     """Keep reading image until succeed.
     This can avoid IOError incurred by heavy IO process."""
-    got_img = False
+    max_retries = 3
+    retry_count = 0
+    
     if not osp.exists(img_path):
         raise IOError("{} does not exist".format(img_path))
-    while not got_img:
+    
+    while retry_count < max_retries:
         try:
             img = Image.open(img_path)
-            got_img = True
-        except IOError:
+            # 检查图像是否有效
+            img.verify()
+            img = Image.open(img_path)  # 重新打开以获取可操作的图像对象
+            return img
+        except IOError as e:
+            retry_count += 1
+            if retry_count < max_retries:
+                print(
+                    "IOError incurred when reading '{}'. Retry {}/{}.".format(
+                        img_path, retry_count, max_retries
+                    )
+                )
+            else:
+                print(
+                    "Failed to read '{}' after {} retries. Skipping this file.".format(
+                        img_path, max_retries
+                    )
+                )
+                raise e
+        except Exception as e:
             print(
-                "IOError incurred when reading '{}'. Will redo. Don't worry. Just chill.".format(
-                    img_path
+                "Unexpected error reading '{}': {}. Skipping this file.".format(
+                    img_path, str(e)
                 )
             )
-            pass
-    return img
+            raise e
 
 
 def sar32bit2RGB(img):
@@ -119,14 +141,9 @@ class ImageDataset(Dataset):
         return len(self.dataset)
 
     def get_image(self, img_path):
-        if img_path.endswith("SAR.tif"):
-            img = read_image(img_path)
-            img = sar32bit2RGB(img)
-            img_size = img.size
-        else:
-            img = read_image(img_path).convert("RGB")
-            img_size = img.size
-            img_size = [img_size[0] * 0.75, img_size[1] * 0.75]
+        img = read_image(img_path).convert("RGB")
+        img_size = img.size
+        img_size = [img_size[0] * 0.75, img_size[1] * 0.75]
         img_size = (
             (img_size[0] / 93 - 0.434) / 0.031,
             (img_size[1] / 427 - 0.461) / 0.031,

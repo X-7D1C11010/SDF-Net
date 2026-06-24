@@ -10,11 +10,13 @@ from .sampler_ddp import RandomIdentitySampler_DDP
 import torch.distributed as dist
 from .hoss import HOSS
 from .pretrain import Pretrain
+from .merged import MergedDataset
 
 
 __factory = {
     "HOSS": HOSS,
     "Pretrain": Pretrain,
+    "Merged": MergedDataset,
 }
 
 
@@ -167,6 +169,8 @@ def make_dataloader(cfg, is_train=True):
         shuffle=False,
         num_workers=num_workers,
         collate_fn=val_collate_fn,
+        pin_memory=True,
+        persistent_workers=True if num_workers > 0 else False,
     )
 
     if cfg.SOLVER.IMS_PER_BATCH % 2 != 0:

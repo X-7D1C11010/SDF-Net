@@ -1,0 +1,43 @@
+nohup: ignoring input
+================================================================================
+TEST SET VALIDATION
+================================================================================
+
+1. Path Configuration:
+   - Dataset root: /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged
+   - Query directory: /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged/query
+   - Gallery directory: /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged/bounding_box_test
+   ✓ All directories exist
+
+2. File Format Check (PNG/JPG only):
+   - Query TIF files: 0
+   - Gallery TIF files: 0
+   - Query PNG/JPG files: 26717
+   - Gallery PNG/JPG files: 9214
+   ✓ No TIF files found (only PNG/JPG allowed)
+
+3. Image Count Validation:
+   - Required: Query > 9200, Gallery > 9100
+   - Query images: 26717
+   - Gallery images: 9214
+   ✓ Query count meets requirement (> 9200)
+   ✓ Gallery count meets requirement (> 9100)
+
+4. Configuration Settings:
+   - TEST.IMS_PER_BATCH: 32
+   - DATALOADER.NUM_WORKERS: 8
+
+================================================================================
+VALIDATION SUMMARY
+================================================================================
+
+Item                           Result     Status    
+-----                          ------     ------    
+Path Configuration             Valid      ✓ PASS
+No TIF files                   0          ✓ PASS
+Query images (>9200)           26717      ✓ PASS
+Gallery images (>9100)         9214       ✓ PASS
+
+Overall                                   ✓ ALL PASS
+
+✓ Test set validation passed! Ready for testing.

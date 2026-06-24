@@ -1,0 +1,381 @@
+2026-05-27 20:50:11 transreid INFO: Saving model in the path :./logs/SDF-Net_sum_struct6/
+2026-05-27 20:50:11 transreid INFO: Namespace(config_file='configs/SDF-Net.yml', opts=[], local_rank=0)
+2026-05-27 20:50:11 transreid INFO: Loaded configuration file configs/SDF-Net.yml
+2026-05-27 20:50:11 transreid INFO: 
+MODEL:
+  PRETRAIN_CHOICE: 'imagenet'
+  PRETRAIN_PATH: "/root/nas/sdfnet/vit_b512_pre.pth"
+  METRIC_LOSS_TYPE: 'triplet'
+  IF_LABELSMOOTH: 'off'
+  IF_WITH_CENTER: 'no'
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  TRANSFORMER_TYPE: 'vit_base_patch16_224_TransOSS'
+  STRIDE_SIZE: [16, 16]
+  MIE: True
+  MIE_COE: 3.0
+  SSE: True
+  PAIR: False
+  DISENTANGLE: True
+  ABLATION_MODE: "sum"
+  ORTH_LOSS_WEIGHT: 10.0
+  STRUCT_LOSS_WEIGHT: 1.0
+  STRUCT_LAYER_INDEX: 6
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+  PROB: 0.5 # random horizontal flip
+  RE_PROB: 0.2 # random erasing
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+
+DATASETS:
+  NAMES: ('HOSS')
+  ROOT_DIR: ('/root/nas/sdfnet/')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 4
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 100
+  BASE_LR: 0.0005
+  IMS_PER_BATCH: 32
+  WARMUP_METHOD: 'linear'
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: -1
+  LOG_PERIOD: 25
+  EVAL_PERIOD: 5
+  WEIGHT_DECAY:  1e-4
+  WEIGHT_DECAY_BIAS: 1e-4
+  BIAS_LR_FACTOR: 2
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 1
+  RE_RANKING: False
+  WEIGHT: "./logs/SDF-Net_sum_struct6/best.pth"
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: "./logs/SDF-Net_sum_struct6/"
+2026-05-27 20:50:11 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 4
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: HOSS
+  ROOT_DIR: /root/nas/sdfnet/
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+  PROB: 0.5
+  RE_PROB: 0.2
+  SIZE_TEST: [256, 128]
+  SIZE_TRAIN: [256, 128]
+MODEL:
+  ABLATION_MODE: sum
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DISENTANGLE: True
+  DIST_TRAIN: False
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: off
+  IF_WITH_CENTER: no
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  MIE: True
+  MIE_COE: 3.0
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  ORTH_LOSS_WEIGHT: 10.0
+  PAIR: False
+  PRETRAIN_CHOICE: imagenet
+  PRETRAIN_PATH: /root/nas/sdfnet/vit_b512_pre.pth
+  SSE: True
+  STRIDE_SIZE: [16, 16]
+  STRUCT_LAYER_INDEX: 6
+  STRUCT_LOSS_WEIGHT: 1.0
+  TRANSFORMER_TYPE: vit_base_patch16_224_TransOSS
+  TRIPLET_LOSS_WEIGHT: 1.0
+OUTPUT_DIR: ./logs/SDF-Net_sum_struct6/
+SOLVER:
+  BASE_LR: 0.0005
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: -1
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 5
+  GAMMA: 0.1
+  IMS_PER_BATCH: 32
+  LARGE_FC_LR: False
+  LOG_PERIOD: 25
+  MARGIN: 0.3
+  MAX_EPOCHS: 100
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1949
+  STEPS: (40, 70)
+  WARMUP_EPOCHS: 5
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 1
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:50:13 transreid.train INFO: start training
+2026-05-27 20:50:18 transreid.train INFO: Epoch[1] done. Loss: 12.167 (Base: 9.860, Orth: 1.742, Struct: 0.565), Acc: 0.208%, Lr: 1.04e-04
+2026-05-27 20:50:22 transreid.train INFO: Epoch[2] done. Loss: 8.670 (Base: 7.850, Orth: 0.411, Struct: 0.409), Acc: 2.708%, Lr: 2.03e-04
+2026-05-27 20:50:27 transreid.train INFO: Epoch[3] done. Loss: 7.934 (Base: 7.318, Orth: 0.284, Struct: 0.331), Acc: 13.542%, Lr: 3.02e-04
+2026-05-27 20:50:31 transreid.train INFO: Epoch[4] done. Loss: 7.342 (Base: 6.812, Orth: 0.251, Struct: 0.278), Acc: 23.264%, Lr: 4.01e-04
+2026-05-27 20:50:36 transreid.train INFO: Epoch[5] done. Loss: 6.939 (Base: 6.479, Orth: 0.238, Struct: 0.223), Acc: 34.375%, Lr: 4.97e-04
+2026-05-27 20:50:42 transreid.train INFO: Validation Results - Epoch: 5
+2026-05-27 20:50:42 transreid.train INFO: mAP: 49.1%
+2026-05-27 20:50:42 transreid.train INFO: CMC curve, Rank-1  : 59.7%
+2026-05-27 20:50:42 transreid.train INFO: CMC curve, Rank-5  : 71.6%
+2026-05-27 20:50:42 transreid.train INFO: CMC curve, Rank-10 : 79.0%
+2026-05-27 20:50:44 transreid.train INFO: Update Best mAP: 49.1% at Epoch 5
+2026-05-27 20:50:44 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:50:48 transreid.train INFO: Epoch[6] done. Loss: 6.617 (Base: 6.229, Orth: 0.201, Struct: 0.188), Acc: 45.069%, Lr: 4.96e-04
+2026-05-27 20:50:53 transreid.train INFO: Epoch[7] done. Loss: 6.305 (Base: 5.957, Orth: 0.180, Struct: 0.168), Acc: 51.042%, Lr: 4.94e-04
+2026-05-27 20:50:57 transreid.train INFO: Epoch[8] done. Loss: 6.131 (Base: 5.815, Orth: 0.164, Struct: 0.152), Acc: 54.792%, Lr: 4.92e-04
+2026-05-27 20:51:02 transreid.train INFO: Epoch[9] done. Loss: 5.770 (Base: 5.458, Orth: 0.172, Struct: 0.140), Acc: 58.056%, Lr: 4.90e-04
+2026-05-27 20:51:06 transreid.train INFO: Epoch[10] done. Loss: 5.551 (Base: 5.240, Orth: 0.183, Struct: 0.129), Acc: 61.806%, Lr: 4.88e-04
+2026-05-27 20:51:13 transreid.train INFO: Validation Results - Epoch: 10
+2026-05-27 20:51:13 transreid.train INFO: mAP: 54.2%
+2026-05-27 20:51:13 transreid.train INFO: CMC curve, Rank-1  : 63.1%
+2026-05-27 20:51:13 transreid.train INFO: CMC curve, Rank-5  : 75.0%
+2026-05-27 20:51:13 transreid.train INFO: CMC curve, Rank-10 : 80.7%
+2026-05-27 20:51:15 transreid.train INFO: Update Best mAP: 54.2% at Epoch 10
+2026-05-27 20:51:15 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:51:19 transreid.train INFO: Epoch[11] done. Loss: 5.383 (Base: 5.130, Orth: 0.133, Struct: 0.120), Acc: 63.681%, Lr: 4.85e-04
+2026-05-27 20:51:24 transreid.train INFO: Epoch[12] done. Loss: 5.230 (Base: 4.958, Orth: 0.151, Struct: 0.121), Acc: 68.750%, Lr: 4.82e-04
+2026-05-27 20:51:28 transreid.train INFO: Epoch[13] done. Loss: 4.996 (Base: 4.750, Orth: 0.136, Struct: 0.110), Acc: 69.375%, Lr: 4.79e-04
+2026-05-27 20:51:32 transreid.train INFO: Epoch[14] done. Loss: 4.802 (Base: 4.550, Orth: 0.142, Struct: 0.111), Acc: 73.264%, Lr: 4.76e-04
+2026-05-27 20:51:37 transreid.train INFO: Epoch[15] done. Loss: 4.609 (Base: 4.383, Orth: 0.121, Struct: 0.105), Acc: 73.194%, Lr: 4.73e-04
+2026-05-27 20:51:43 transreid.train INFO: Validation Results - Epoch: 15
+2026-05-27 20:51:43 transreid.train INFO: mAP: 55.9%
+2026-05-27 20:51:43 transreid.train INFO: CMC curve, Rank-1  : 65.3%
+2026-05-27 20:51:43 transreid.train INFO: CMC curve, Rank-5  : 77.8%
+2026-05-27 20:51:43 transreid.train INFO: CMC curve, Rank-10 : 84.7%
+2026-05-27 20:51:46 transreid.train INFO: Update Best mAP: 55.9% at Epoch 15
+2026-05-27 20:51:46 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:51:50 transreid.train INFO: Epoch[16] done. Loss: 4.451 (Base: 4.230, Orth: 0.122, Struct: 0.099), Acc: 76.806%, Lr: 4.69e-04
+2026-05-27 20:51:55 transreid.train INFO: Epoch[17] done. Loss: 4.258 (Base: 4.046, Orth: 0.113, Struct: 0.100), Acc: 77.847%, Lr: 4.65e-04
+2026-05-27 20:51:59 transreid.train INFO: Epoch[18] done. Loss: 4.105 (Base: 3.895, Orth: 0.118, Struct: 0.092), Acc: 79.028%, Lr: 4.61e-04
+2026-05-27 20:52:04 transreid.train INFO: Epoch[19] done. Loss: 4.090 (Base: 3.869, Orth: 0.128, Struct: 0.093), Acc: 81.736%, Lr: 4.57e-04
+2026-05-27 20:52:08 transreid.train INFO: Epoch[20] done. Loss: 3.813 (Base: 3.612, Orth: 0.113, Struct: 0.088), Acc: 81.458%, Lr: 4.52e-04
+2026-05-27 20:52:14 transreid.train INFO: Validation Results - Epoch: 20
+2026-05-27 20:52:14 transreid.train INFO: mAP: 56.0%
+2026-05-27 20:52:14 transreid.train INFO: CMC curve, Rank-1  : 64.8%
+2026-05-27 20:52:14 transreid.train INFO: CMC curve, Rank-5  : 77.8%
+2026-05-27 20:52:14 transreid.train INFO: CMC curve, Rank-10 : 83.0%
+2026-05-27 20:52:16 transreid.train INFO: Update Best mAP: 56.0% at Epoch 20
+2026-05-27 20:52:16 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:52:21 transreid.train INFO: Epoch[21] done. Loss: 3.636 (Base: 3.451, Orth: 0.101, Struct: 0.084), Acc: 84.167%, Lr: 4.48e-04
+2026-05-27 20:52:25 transreid.train INFO: Epoch[22] done. Loss: 3.627 (Base: 3.439, Orth: 0.104, Struct: 0.084), Acc: 85.972%, Lr: 4.43e-04
+2026-05-27 20:52:30 transreid.train INFO: Epoch[23] done. Loss: 3.527 (Base: 3.345, Orth: 0.100, Struct: 0.081), Acc: 84.375%, Lr: 4.38e-04
+2026-05-27 20:52:34 transreid.train INFO: Epoch[24] done. Loss: 3.299 (Base: 3.114, Orth: 0.107, Struct: 0.079), Acc: 88.125%, Lr: 4.32e-04
+2026-05-27 20:52:39 transreid.train INFO: Epoch[25] done. Loss: 3.270 (Base: 3.089, Orth: 0.103, Struct: 0.077), Acc: 88.611%, Lr: 4.27e-04
+2026-05-27 20:52:45 transreid.train INFO: Validation Results - Epoch: 25
+2026-05-27 20:52:45 transreid.train INFO: mAP: 56.9%
+2026-05-27 20:52:45 transreid.train INFO: CMC curve, Rank-1  : 65.9%
+2026-05-27 20:52:45 transreid.train INFO: CMC curve, Rank-5  : 77.8%
+2026-05-27 20:52:45 transreid.train INFO: CMC curve, Rank-10 : 84.7%
+2026-05-27 20:52:47 transreid.train INFO: Update Best mAP: 56.9% at Epoch 25
+2026-05-27 20:52:47 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:52:51 transreid.train INFO: Epoch[26] done. Loss: 3.108 (Base: 2.937, Orth: 0.099, Struct: 0.072), Acc: 89.514%, Lr: 4.21e-04
+2026-05-27 20:52:56 transreid.train INFO: Epoch[27] done. Loss: 2.929 (Base: 2.752, Orth: 0.102, Struct: 0.075), Acc: 90.556%, Lr: 4.15e-04
+2026-05-27 20:53:00 transreid.train INFO: Epoch[28] done. Loss: 2.886 (Base: 2.707, Orth: 0.103, Struct: 0.076), Acc: 90.417%, Lr: 4.10e-04
+2026-05-27 20:53:05 transreid.train INFO: Epoch[29] done. Loss: 2.796 (Base: 2.623, Orth: 0.099, Struct: 0.073), Acc: 90.556%, Lr: 4.03e-04
+2026-05-27 20:53:09 transreid.train INFO: Epoch[30] done. Loss: 2.685 (Base: 2.515, Orth: 0.097, Struct: 0.073), Acc: 92.569%, Lr: 3.97e-04
+2026-05-27 20:53:15 transreid.train INFO: Validation Results - Epoch: 30
+2026-05-27 20:53:15 transreid.train INFO: mAP: 58.1%
+2026-05-27 20:53:15 transreid.train INFO: CMC curve, Rank-1  : 66.5%
+2026-05-27 20:53:15 transreid.train INFO: CMC curve, Rank-5  : 79.5%
+2026-05-27 20:53:15 transreid.train INFO: CMC curve, Rank-10 : 85.2%
+2026-05-27 20:53:18 transreid.train INFO: Update Best mAP: 58.1% at Epoch 30
+2026-05-27 20:53:18 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:53:22 transreid.train INFO: Epoch[31] done. Loss: 2.653 (Base: 2.486, Orth: 0.099, Struct: 0.069), Acc: 91.875%, Lr: 3.91e-04
+2026-05-27 20:53:27 transreid.train INFO: Epoch[32] done. Loss: 2.529 (Base: 2.373, Orth: 0.087, Struct: 0.069), Acc: 92.917%, Lr: 3.84e-04
+2026-05-27 20:53:31 transreid.train INFO: Epoch[33] done. Loss: 2.434 (Base: 2.270, Orth: 0.096, Struct: 0.069), Acc: 92.431%, Lr: 3.78e-04
+2026-05-27 20:53:36 transreid.train INFO: Epoch[34] done. Loss: 2.403 (Base: 2.249, Orth: 0.085, Struct: 0.069), Acc: 93.958%, Lr: 3.71e-04
+2026-05-27 20:53:40 transreid.train INFO: Epoch[35] done. Loss: 2.337 (Base: 2.165, Orth: 0.101, Struct: 0.070), Acc: 93.472%, Lr: 3.64e-04
+2026-05-27 20:53:47 transreid.train INFO: Validation Results - Epoch: 35
+2026-05-27 20:53:47 transreid.train INFO: mAP: 58.5%
+2026-05-27 20:53:47 transreid.train INFO: CMC curve, Rank-1  : 65.9%
+2026-05-27 20:53:47 transreid.train INFO: CMC curve, Rank-5  : 80.1%
+2026-05-27 20:53:47 transreid.train INFO: CMC curve, Rank-10 : 85.2%
+2026-05-27 20:53:49 transreid.train INFO: Update Best mAP: 58.5% at Epoch 35
+2026-05-27 20:53:49 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:53:53 transreid.train INFO: Epoch[36] done. Loss: 2.318 (Base: 2.156, Orth: 0.098, Struct: 0.064), Acc: 93.681%, Lr: 3.57e-04
+2026-05-27 20:53:58 transreid.train INFO: Epoch[37] done. Loss: 2.160 (Base: 2.006, Orth: 0.087, Struct: 0.066), Acc: 93.611%, Lr: 3.50e-04
+2026-05-27 20:54:02 transreid.train INFO: Epoch[38] done. Loss: 2.171 (Base: 2.018, Orth: 0.089, Struct: 0.063), Acc: 94.375%, Lr: 3.42e-04
+2026-05-27 20:54:06 transreid.train INFO: Epoch[39] done. Loss: 2.107 (Base: 1.960, Orth: 0.083, Struct: 0.064), Acc: 94.167%, Lr: 3.35e-04
+2026-05-27 20:54:11 transreid.train INFO: Epoch[40] done. Loss: 1.955 (Base: 1.805, Orth: 0.081, Struct: 0.068), Acc: 95.347%, Lr: 3.28e-04
+2026-05-27 20:54:17 transreid.train INFO: Validation Results - Epoch: 40
+2026-05-27 20:54:17 transreid.train INFO: mAP: 59.4%
+2026-05-27 20:54:17 transreid.train INFO: CMC curve, Rank-1  : 68.2%
+2026-05-27 20:54:17 transreid.train INFO: CMC curve, Rank-5  : 80.7%
+2026-05-27 20:54:17 transreid.train INFO: CMC curve, Rank-10 : 86.4%
+2026-05-27 20:54:19 transreid.train INFO: Update Best mAP: 59.4% at Epoch 40
+2026-05-27 20:54:19 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:54:24 transreid.train INFO: Epoch[41] done. Loss: 1.850 (Base: 1.703, Orth: 0.080, Struct: 0.068), Acc: 96.597%, Lr: 3.20e-04
+2026-05-27 20:54:28 transreid.train INFO: Epoch[42] done. Loss: 1.878 (Base: 1.736, Orth: 0.079, Struct: 0.063), Acc: 96.042%, Lr: 3.13e-04
+2026-05-27 20:54:33 transreid.train INFO: Epoch[43] done. Loss: 1.873 (Base: 1.730, Orth: 0.077, Struct: 0.066), Acc: 95.764%, Lr: 3.05e-04
+2026-05-27 20:54:37 transreid.train INFO: Epoch[44] done. Loss: 1.735 (Base: 1.599, Orth: 0.076, Struct: 0.061), Acc: 97.153%, Lr: 2.97e-04
+2026-05-27 20:54:42 transreid.train INFO: Epoch[45] done. Loss: 1.819 (Base: 1.685, Orth: 0.076, Struct: 0.058), Acc: 96.181%, Lr: 2.90e-04
+2026-05-27 20:54:48 transreid.train INFO: Validation Results - Epoch: 45
+2026-05-27 20:54:48 transreid.train INFO: mAP: 59.7%
+2026-05-27 20:54:48 transreid.train INFO: CMC curve, Rank-1  : 67.6%
+2026-05-27 20:54:48 transreid.train INFO: CMC curve, Rank-5  : 80.7%
+2026-05-27 20:54:48 transreid.train INFO: CMC curve, Rank-10 : 86.9%
+2026-05-27 20:54:50 transreid.train INFO: Update Best mAP: 59.7% at Epoch 45
+2026-05-27 20:54:50 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:54:54 transreid.train INFO: Epoch[46] done. Loss: 1.716 (Base: 1.587, Orth: 0.072, Struct: 0.057), Acc: 96.042%, Lr: 2.82e-04
+2026-05-27 20:54:59 transreid.train INFO: Epoch[47] done. Loss: 1.654 (Base: 1.518, Orth: 0.077, Struct: 0.059), Acc: 97.222%, Lr: 2.74e-04
+2026-05-27 20:55:03 transreid.train INFO: Epoch[48] done. Loss: 1.678 (Base: 1.527, Orth: 0.090, Struct: 0.060), Acc: 96.250%, Lr: 2.66e-04
+2026-05-27 20:55:08 transreid.train INFO: Epoch[49] done. Loss: 1.611 (Base: 1.476, Orth: 0.076, Struct: 0.059), Acc: 96.806%, Lr: 2.58e-04
+2026-05-27 20:55:12 transreid.train INFO: Epoch[50] done. Loss: 1.623 (Base: 1.491, Orth: 0.074, Struct: 0.059), Acc: 97.847%, Lr: 2.51e-04
+2026-05-27 20:55:18 transreid.train INFO: Validation Results - Epoch: 50
+2026-05-27 20:55:18 transreid.train INFO: mAP: 58.5%
+2026-05-27 20:55:18 transreid.train INFO: CMC curve, Rank-1  : 66.5%
+2026-05-27 20:55:18 transreid.train INFO: CMC curve, Rank-5  : 80.1%
+2026-05-27 20:55:18 transreid.train INFO: CMC curve, Rank-10 : 86.9%
+2026-05-27 20:55:23 transreid.train INFO: Epoch[51] done. Loss: 1.559 (Base: 1.427, Orth: 0.073, Struct: 0.059), Acc: 96.597%, Lr: 2.43e-04
+2026-05-27 20:55:27 transreid.train INFO: Epoch[52] done. Loss: 1.482 (Base: 1.357, Orth: 0.067, Struct: 0.058), Acc: 97.083%, Lr: 2.35e-04
+2026-05-27 20:55:32 transreid.train INFO: Epoch[53] done. Loss: 1.536 (Base: 1.409, Orth: 0.070, Struct: 0.057), Acc: 97.361%, Lr: 2.27e-04
+2026-05-27 20:55:36 transreid.train INFO: Epoch[54] done. Loss: 1.452 (Base: 1.319, Orth: 0.074, Struct: 0.059), Acc: 97.639%, Lr: 2.19e-04
+2026-05-27 20:55:41 transreid.train INFO: Epoch[55] done. Loss: 1.461 (Base: 1.339, Orth: 0.068, Struct: 0.055), Acc: 96.944%, Lr: 2.11e-04
+2026-05-27 20:55:47 transreid.train INFO: Validation Results - Epoch: 55
+2026-05-27 20:55:47 transreid.train INFO: mAP: 59.3%
+2026-05-27 20:55:47 transreid.train INFO: CMC curve, Rank-1  : 66.5%
+2026-05-27 20:55:47 transreid.train INFO: CMC curve, Rank-5  : 81.2%
+2026-05-27 20:55:47 transreid.train INFO: CMC curve, Rank-10 : 87.5%
+2026-05-27 20:55:51 transreid.train INFO: Epoch[56] done. Loss: 1.424 (Base: 1.298, Orth: 0.071, Struct: 0.055), Acc: 97.014%, Lr: 2.04e-04
+2026-05-27 20:55:56 transreid.train INFO: Epoch[57] done. Loss: 1.373 (Base: 1.253, Orth: 0.066, Struct: 0.055), Acc: 97.361%, Lr: 1.96e-04
+2026-05-27 20:56:00 transreid.train INFO: Epoch[58] done. Loss: 1.360 (Base: 1.241, Orth: 0.065, Struct: 0.053), Acc: 97.639%, Lr: 1.88e-04
+2026-05-27 20:56:05 transreid.train INFO: Epoch[59] done. Loss: 1.351 (Base: 1.227, Orth: 0.069, Struct: 0.054), Acc: 97.708%, Lr: 1.81e-04
+2026-05-27 20:56:09 transreid.train INFO: Epoch[60] done. Loss: 1.348 (Base: 1.225, Orth: 0.068, Struct: 0.056), Acc: 96.736%, Lr: 1.73e-04
+2026-05-27 20:56:15 transreid.train INFO: Validation Results - Epoch: 60
+2026-05-27 20:56:15 transreid.train INFO: mAP: 60.0%
+2026-05-27 20:56:15 transreid.train INFO: CMC curve, Rank-1  : 67.6%
+2026-05-27 20:56:15 transreid.train INFO: CMC curve, Rank-5  : 81.2%
+2026-05-27 20:56:15 transreid.train INFO: CMC curve, Rank-10 : 86.9%
+2026-05-27 20:56:17 transreid.train INFO: Update Best mAP: 60.0% at Epoch 60
+2026-05-27 20:56:17 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:56:22 transreid.train INFO: Epoch[61] done. Loss: 1.281 (Base: 1.156, Orth: 0.069, Struct: 0.056), Acc: 97.431%, Lr: 1.66e-04
+2026-05-27 20:56:26 transreid.train INFO: Epoch[62] done. Loss: 1.273 (Base: 1.153, Orth: 0.065, Struct: 0.056), Acc: 97.708%, Lr: 1.59e-04
+2026-05-27 20:56:31 transreid.train INFO: Epoch[63] done. Loss: 1.208 (Base: 1.092, Orth: 0.064, Struct: 0.053), Acc: 98.889%, Lr: 1.51e-04
+2026-05-27 20:56:35 transreid.train INFO: Epoch[64] done. Loss: 1.279 (Base: 1.161, Orth: 0.064, Struct: 0.053), Acc: 97.778%, Lr: 1.44e-04
+2026-05-27 20:56:40 transreid.train INFO: Epoch[65] done. Loss: 1.290 (Base: 1.172, Orth: 0.064, Struct: 0.054), Acc: 97.292%, Lr: 1.37e-04
+2026-05-27 20:56:46 transreid.train INFO: Validation Results - Epoch: 65
+2026-05-27 20:56:46 transreid.train INFO: mAP: 59.3%
+2026-05-27 20:56:46 transreid.train INFO: CMC curve, Rank-1  : 67.6%
+2026-05-27 20:56:46 transreid.train INFO: CMC curve, Rank-5  : 81.8%
+2026-05-27 20:56:46 transreid.train INFO: CMC curve, Rank-10 : 87.5%
+2026-05-27 20:56:50 transreid.train INFO: Epoch[66] done. Loss: 1.187 (Base: 1.069, Orth: 0.065, Struct: 0.054), Acc: 98.403%, Lr: 1.30e-04
+2026-05-27 20:56:55 transreid.train INFO: Epoch[67] done. Loss: 1.219 (Base: 1.101, Orth: 0.063, Struct: 0.055), Acc: 98.194%, Lr: 1.23e-04
+2026-05-27 20:56:59 transreid.train INFO: Epoch[68] done. Loss: 1.229 (Base: 1.117, Orth: 0.061, Struct: 0.051), Acc: 97.083%, Lr: 1.17e-04
+2026-05-27 20:57:04 transreid.train INFO: Epoch[69] done. Loss: 1.222 (Base: 1.108, Orth: 0.061, Struct: 0.053), Acc: 98.264%, Lr: 1.10e-04
+2026-05-27 20:57:08 transreid.train INFO: Epoch[70] done. Loss: 1.170 (Base: 1.056, Orth: 0.063, Struct: 0.050), Acc: 98.611%, Lr: 1.04e-04
+2026-05-27 20:57:14 transreid.train INFO: Validation Results - Epoch: 70
+2026-05-27 20:57:14 transreid.train INFO: mAP: 60.6%
+2026-05-27 20:57:14 transreid.train INFO: CMC curve, Rank-1  : 69.3%
+2026-05-27 20:57:14 transreid.train INFO: CMC curve, Rank-5  : 83.5%
+2026-05-27 20:57:14 transreid.train INFO: CMC curve, Rank-10 : 88.1%
+2026-05-27 20:57:16 transreid.train INFO: Update Best mAP: 60.6% at Epoch 70
+2026-05-27 20:57:16 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:57:21 transreid.train INFO: Epoch[71] done. Loss: 1.158 (Base: 1.045, Orth: 0.062, Struct: 0.051), Acc: 98.403%, Lr: 9.76e-05
+2026-05-27 20:57:25 transreid.train INFO: Epoch[72] done. Loss: 1.162 (Base: 1.054, Orth: 0.060, Struct: 0.048), Acc: 98.403%, Lr: 9.15e-05
+2026-05-27 20:57:30 transreid.train INFO: Epoch[73] done. Loss: 1.157 (Base: 1.047, Orth: 0.059, Struct: 0.051), Acc: 97.708%, Lr: 8.55e-05
+2026-05-27 20:57:34 transreid.train INFO: Epoch[74] done. Loss: 1.169 (Base: 1.056, Orth: 0.060, Struct: 0.053), Acc: 98.472%, Lr: 7.97e-05
+2026-05-27 20:57:38 transreid.train INFO: Epoch[75] done. Loss: 1.146 (Base: 1.035, Orth: 0.060, Struct: 0.051), Acc: 98.333%, Lr: 7.41e-05
+2026-05-27 20:57:45 transreid.train INFO: Validation Results - Epoch: 75
+2026-05-27 20:57:45 transreid.train INFO: mAP: 60.5%
+2026-05-27 20:57:45 transreid.train INFO: CMC curve, Rank-1  : 69.9%
+2026-05-27 20:57:45 transreid.train INFO: CMC curve, Rank-5  : 81.2%
+2026-05-27 20:57:45 transreid.train INFO: CMC curve, Rank-10 : 88.1%
+2026-05-27 20:57:49 transreid.train INFO: Epoch[76] done. Loss: 1.128 (Base: 1.016, Orth: 0.059, Struct: 0.053), Acc: 97.986%, Lr: 6.86e-05
+2026-05-27 20:57:54 transreid.train INFO: Epoch[77] done. Loss: 1.179 (Base: 1.069, Orth: 0.058, Struct: 0.052), Acc: 97.986%, Lr: 6.33e-05
+2026-05-27 20:57:58 transreid.train INFO: Epoch[78] done. Loss: 1.156 (Base: 1.046, Orth: 0.059, Struct: 0.052), Acc: 98.681%, Lr: 5.83e-05
+2026-05-27 20:58:03 transreid.train INFO: Epoch[79] done. Loss: 1.121 (Base: 1.009, Orth: 0.059, Struct: 0.053), Acc: 98.750%, Lr: 5.34e-05
+2026-05-27 20:58:07 transreid.train INFO: Epoch[80] done. Loss: 1.095 (Base: 0.988, Orth: 0.057, Struct: 0.051), Acc: 97.708%, Lr: 4.87e-05
+2026-05-27 20:58:13 transreid.train INFO: Validation Results - Epoch: 80
+2026-05-27 20:58:13 transreid.train INFO: mAP: 60.6%
+2026-05-27 20:58:13 transreid.train INFO: CMC curve, Rank-1  : 69.3%
+2026-05-27 20:58:13 transreid.train INFO: CMC curve, Rank-5  : 81.8%
+2026-05-27 20:58:13 transreid.train INFO: CMC curve, Rank-10 : 88.1%
+2026-05-27 20:58:18 transreid.train INFO: Epoch[81] done. Loss: 1.122 (Base: 1.014, Orth: 0.057, Struct: 0.052), Acc: 97.847%, Lr: 4.41e-05
+2026-05-27 20:58:22 transreid.train INFO: Epoch[82] done. Loss: 1.146 (Base: 1.037, Orth: 0.059, Struct: 0.051), Acc: 97.847%, Lr: 3.98e-05
+2026-05-27 20:58:27 transreid.train INFO: Epoch[83] done. Loss: 1.095 (Base: 0.983, Orth: 0.059, Struct: 0.054), Acc: 98.403%, Lr: 3.57e-05
+2026-05-27 20:58:31 transreid.train INFO: Epoch[84] done. Loss: 1.088 (Base: 0.982, Orth: 0.056, Struct: 0.051), Acc: 98.125%, Lr: 3.19e-05
+2026-05-27 20:58:36 transreid.train INFO: Epoch[85] done. Loss: 1.127 (Base: 1.018, Orth: 0.058, Struct: 0.051), Acc: 98.611%, Lr: 2.82e-05
+2026-05-27 20:58:42 transreid.train INFO: Validation Results - Epoch: 85
+2026-05-27 20:58:42 transreid.train INFO: mAP: 60.5%
+2026-05-27 20:58:42 transreid.train INFO: CMC curve, Rank-1  : 69.3%
+2026-05-27 20:58:42 transreid.train INFO: CMC curve, Rank-5  : 82.4%
+2026-05-27 20:58:42 transreid.train INFO: CMC curve, Rank-10 : 88.1%
+2026-05-27 20:58:46 transreid.train INFO: Epoch[86] done. Loss: 1.097 (Base: 0.986, Orth: 0.056, Struct: 0.054), Acc: 97.847%, Lr: 2.47e-05
+2026-05-27 20:58:51 transreid.train INFO: Epoch[87] done. Loss: 1.098 (Base: 0.989, Orth: 0.059, Struct: 0.051), Acc: 98.611%, Lr: 2.15e-05
+2026-05-27 20:58:55 transreid.train INFO: Epoch[88] done. Loss: 1.120 (Base: 1.015, Orth: 0.056, Struct: 0.050), Acc: 98.194%, Lr: 1.85e-05
+2026-05-27 20:59:00 transreid.train INFO: Epoch[89] done. Loss: 1.059 (Base: 0.953, Orth: 0.056, Struct: 0.050), Acc: 98.333%, Lr: 1.58e-05
+2026-05-27 20:59:04 transreid.train INFO: Epoch[90] done. Loss: 1.151 (Base: 1.042, Orth: 0.058, Struct: 0.051), Acc: 98.264%, Lr: 1.32e-05
+2026-05-27 20:59:11 transreid.train INFO: Validation Results - Epoch: 90
+2026-05-27 20:59:11 transreid.train INFO: mAP: 60.7%
+2026-05-27 20:59:11 transreid.train INFO: CMC curve, Rank-1  : 69.9%
+2026-05-27 20:59:11 transreid.train INFO: CMC curve, Rank-5  : 81.8%
+2026-05-27 20:59:11 transreid.train INFO: CMC curve, Rank-10 : 88.1%
+2026-05-27 20:59:12 transreid.train INFO: Update Best mAP: 60.7% at Epoch 90
+2026-05-27 20:59:12 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:59:17 transreid.train INFO: Epoch[91] done. Loss: 1.046 (Base: 0.937, Orth: 0.057, Struct: 0.051), Acc: 98.958%, Lr: 1.09e-05
+2026-05-27 20:59:21 transreid.train INFO: Epoch[92] done. Loss: 1.078 (Base: 0.973, Orth: 0.056, Struct: 0.049), Acc: 98.403%, Lr: 8.84e-06
+2026-05-27 20:59:26 transreid.train INFO: Epoch[93] done. Loss: 1.105 (Base: 0.993, Orth: 0.059, Struct: 0.054), Acc: 98.403%, Lr: 7.01e-06
+2026-05-27 20:59:30 transreid.train INFO: Epoch[94] done. Loss: 1.078 (Base: 0.971, Orth: 0.057, Struct: 0.050), Acc: 98.264%, Lr: 5.42e-06
+2026-05-27 20:59:35 transreid.train INFO: Epoch[95] done. Loss: 1.116 (Base: 1.010, Orth: 0.055, Struct: 0.051), Acc: 98.681%, Lr: 4.07e-06
+2026-05-27 20:59:41 transreid.train INFO: Validation Results - Epoch: 95
+2026-05-27 20:59:41 transreid.train INFO: mAP: 60.9%
+2026-05-27 20:59:41 transreid.train INFO: CMC curve, Rank-1  : 69.9%
+2026-05-27 20:59:41 transreid.train INFO: CMC curve, Rank-5  : 81.8%
+2026-05-27 20:59:41 transreid.train INFO: CMC curve, Rank-10 : 88.1%
+2026-05-27 20:59:42 transreid.train INFO: Update Best mAP: 60.9% at Epoch 95
+2026-05-27 20:59:42 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 20:59:47 transreid.train INFO: Epoch[96] done. Loss: 1.057 (Base: 0.948, Orth: 0.057, Struct: 0.052), Acc: 98.681%, Lr: 2.97e-06
+2026-05-27 20:59:51 transreid.train INFO: Epoch[97] done. Loss: 1.079 (Base: 0.971, Orth: 0.054, Struct: 0.054), Acc: 98.542%, Lr: 2.11e-06
+2026-05-27 20:59:56 transreid.train INFO: Epoch[98] done. Loss: 1.063 (Base: 0.953, Orth: 0.057, Struct: 0.052), Acc: 98.403%, Lr: 1.49e-06
+2026-05-27 21:00:00 transreid.train INFO: Epoch[99] done. Loss: 1.132 (Base: 1.025, Orth: 0.057, Struct: 0.050), Acc: 98.125%, Lr: 1.12e-06
+2026-05-27 21:00:05 transreid.train INFO: Epoch[100] done. Loss: 1.069 (Base: 0.959, Orth: 0.056, Struct: 0.054), Acc: 98.681%, Lr: 1.00e-06
+2026-05-27 21:00:11 transreid.train INFO: Validation Results - Epoch: 100
+2026-05-27 21:00:11 transreid.train INFO: mAP: 60.7%
+2026-05-27 21:00:11 transreid.train INFO: CMC curve, Rank-1  : 69.3%
+2026-05-27 21:00:11 transreid.train INFO: CMC curve, Rank-5  : 81.2%
+2026-05-27 21:00:11 transreid.train INFO: CMC curve, Rank-10 : 88.1%
+2026-05-27 21:00:11 transreid.train INFO: ==================================================
+2026-05-27 21:00:11 transreid.train INFO: Training Finished! Best Validation Metrics:
+2026-05-27 21:00:11 transreid.train INFO: Best mAP: 60.9% (at Epoch 95)
+2026-05-27 21:00:11 transreid.train INFO: Corresponding Rank-1: 69.9%
+2026-05-27 21:00:11 transreid.train INFO: Corresponding Rank-5: 81.8%
+2026-05-27 21:00:11 transreid.train INFO: Corresponding Rank-10: 88.1%
+2026-05-27 21:00:11 transreid.train INFO: Best Weights Saved at: ./logs/SDF-Net_sum_struct6/best.pth
+2026-05-27 21:00:11 transreid.train INFO: ==================================================

@@ -1,6 +1,6 @@
 MODEL:
   PRETRAIN_CHOICE: 'imagenet'
-  PRETRAIN_PATH: "/home/share/chenfree/ReID/vit_base_p16_224-4e355ebd.pth"
+  PRETRAIN_PATH: "/ssd_data/lixiang_data/SDF-Net/model/vit_base_p16_224.pth"
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
@@ -22,7 +22,7 @@ INPUT:
 
 DATASETS:
   NAMES: ('Pretrain')
-  ROOT_DIR: ('/home/share/chenfree/ReID/')
+  ROOT_DIR: ('/ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data')
 
 DATALOADER:
   SAMPLER: 'softmax_triplet'

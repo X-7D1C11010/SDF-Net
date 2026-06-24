@@ -52,8 +52,14 @@ def do_train_pair(cfg, model, train_loader_pair, optimizer, scheduler, local_ran
                 target_cam = target_cam.to(device)
 
                 with amp.autocast(enabled=True):
-                    logits_per_sar = model(img, target, cam_label=target_cam)
-                    loss = clip_loss(logits_per_sar)
+                    outputs = model(img, target, cam_label=target_cam)
+                    
+                    # --- 核心修复：提取分类预测并使用交叉熵进行预训练 ---
+                    if isinstance(outputs, tuple):
+                        cls_score = outputs[0]  # 提取 Element [0] (形状 [256, 55654])
+                    else:
+                        cls_score = outputs
+                    loss = torch.nn.functional.cross_entropy(cls_score, target)
 
                 scaler.scale(loss).backward()
                 scaler.step(optimizer)
@@ -314,15 +320,15 @@ def do_train(
 
 
 def do_inference(cfg, model, val_loader, num_query):
-    device = "cuda"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     logger = logging.getLogger("transreid.test")
-    logger.info("Enter inferencing")
+    logger.info(f"Enter inferencing, using device: {device}")
 
     evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
 
     evaluator.reset()
 
-    if device:
+    if device == "cuda":
         if torch.cuda.device_count() > 1:
             print(f"Using {torch.cuda.device_count()} GPUs for inference")
             model = nn.DataParallel(model)

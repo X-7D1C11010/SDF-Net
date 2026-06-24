@@ -4,18 +4,14 @@ import os.path as osp
 from .bases import BaseImageDataset
 
 
-class HOSS(BaseImageDataset):
+class MergedDataset(BaseImageDataset):
     """
-    HOSS dataset
+    合并的多数据集 - 支持光学和SAR跨模态ReID
     """
-
-    dataset_dir = "HOSS"
-    # dataset_dir = "HOSS/subset/O2S"
-    # dataset_dir = "HOSS/subset/S2O"
 
     def __init__(self, root="", verbose=True, pid_begin=0, is_train=True, **kwargs):
-        super(HOSS, self).__init__()
-        self.dataset_dir = osp.join(root, self.dataset_dir)
+        super(MergedDataset, self).__init__()
+        self.dataset_dir = root
         self.train_dir = osp.join(self.dataset_dir, "bounding_box_train")
         self.query_dir = osp.join(self.dataset_dir, "query")
         self.gallery_dir = osp.join(self.dataset_dir, "bounding_box_test")
@@ -34,7 +30,7 @@ class HOSS(BaseImageDataset):
         gallery = self._process_dir(self.gallery_dir, relabel=False)
 
         if verbose:
-            print("=> HOSS ReID Dataset loaded")
+            print("=> Merged Dataset loaded")
             self.print_dataset_statistics(train, query, gallery)
             if train_pair is not None:
                 print("Number of RGB-SAR pair: {}".format(len(train_pair)))
@@ -100,29 +96,28 @@ class HOSS(BaseImageDataset):
         return num_pids, num_imgs, num_cams, num_views
 
     def _check_before_run(self):
-        """Check if all files are available before going deeper"""
         if not osp.exists(self.dataset_dir):
             raise RuntimeError("'{}' is not available".format(self.dataset_dir))
         if self.is_train and not osp.exists(self.train_dir):
             raise RuntimeError("'{}' is not available".format(self.train_dir))
-        if not osp.exists(self.query_dir):
-            raise RuntimeError("'{}' is not available".format(self.query_dir))
-        if not osp.exists(self.gallery_dir):
-            raise RuntimeError("'{}' is not available".format(self.gallery_dir))
 
     def _process_dir(self, dir_path, relabel=False):
-        img_paths = glob.glob(osp.join(dir_path, "*.tif"))+ glob.glob(osp.join(dir_path, "*.jpg"))+ glob.glob(osp.join(dir_path, "*.png"))
+        img_paths = glob.glob(osp.join(dir_path, "*.jpg")) + \
+                    glob.glob(osp.join(dir_path, "*.jpeg")) + \
+                    glob.glob(osp.join(dir_path, "*.png"))
 
         pid_container = set()
         for img_path in sorted(img_paths):
-            pid = int(img_path.split("/")[-1].split("_")[0])
+            pid = self._extract_pid(img_path)
             pid_container.add(pid)
+        
         pid2label = {pid: label for label, pid in enumerate(pid_container)}
         dataset = []
+        
         for img_path in sorted(img_paths):
-            pid = int(img_path.split("/")[-1].split("_")[0])
-            # camid 0 for RGB, 1 for SAR
-            camid = 0 if img_path.split("/")[-1].split("_")[-1] == "RGB.tif" else 1
+            pid = self._extract_pid(img_path)
+            camid = self._extract_camid(img_path)
+            
             if relabel:
                 pid = pid2label[pid]
 
@@ -130,42 +125,86 @@ class HOSS(BaseImageDataset):
         return dataset
 
     def _process_dir_train(self, dir_path, relabel=False):
-        img_paths = glob.glob(osp.join(dir_path, "*.tif"))
+        opt_dir = osp.join(dir_path, "opt")
+        sar_dir = osp.join(dir_path, "sar")
 
-        RGB_paths = [i for i in img_paths if i.endswith("RGB.tif")]
-        pid2sar = {}
+        opt_paths = []
+        if osp.exists(opt_dir):
+            opt_paths = glob.glob(osp.join(opt_dir, "*.jpg")) + \
+                        glob.glob(osp.join(opt_dir, "*.jpeg")) + \
+                        glob.glob(osp.join(opt_dir, "*.png"))
+
+        sar_paths = []
+        if osp.exists(sar_dir):
+            sar_paths = glob.glob(osp.join(sar_dir, "*.jpg")) + \
+                        glob.glob(osp.join(sar_dir, "*.jpeg")) + \
+                        glob.glob(osp.join(sar_dir, "*.png"))
+
+        all_paths = opt_paths + sar_paths
 
         pid_container = set()
-        for img_path in sorted(img_paths):
-            pid = int(img_path.split("/")[-1].split("_")[0])
+        pid2sar = {}
+        pid2opt = {}
+
+        for img_path in sorted(all_paths):
+            pid = self._extract_pid(img_path)
             pid_container.add(pid)
-            if img_path.endswith("SAR.tif"):
+            
+            if self._is_sar(img_path):
                 if pid not in pid2sar:
                     pid2sar[pid] = [img_path]
                 else:
                     pid2sar[pid].append(img_path)
+            else:
+                if pid not in pid2opt:
+                    pid2opt[pid] = [img_path]
+                else:
+                    pid2opt[pid].append(img_path)
+
         pid2label = {pid: label for label, pid in enumerate(pid_container)}
 
         dataset = []
-        for img_path in sorted(img_paths):
-            pid = int(img_path.split("/")[-1].split("_")[0])
-            # camid 0 for RGB, 1 for SAR
-            camid = 0 if img_path.split("/")[-1].split("_")[-1] == "RGB.tif" else 1
+        for img_path in sorted(all_paths):
+            pid = self._extract_pid(img_path)
+            camid = self._extract_camid(img_path)
+            
             if relabel:
                 pid = pid2label[pid]
+            
             dataset.append((img_path, self.pid_begin + pid, camid, 1))
 
         dataset_pair = []
-        for img_path in sorted(RGB_paths):
-            pid = int(img_path.split("/")[-1].split("_")[0])
-            if pid not in pid2sar.keys():
+        for pid in pid2opt.keys():
+            if pid not in pid2sar:
                 continue
-            for sar_path in pid2sar[pid]:
-                dataset_pair.append(
-                    [
-                        (img_path, self.pid_begin + pid, 0, 1),
-                        (sar_path, self.pid_begin + pid, 1, 1),
-                    ]
-                )
+            for opt_path in pid2opt[pid]:
+                for sar_path in pid2sar[pid]:
+                    dataset_pair.append([
+                        (opt_path, self.pid_begin + pid2label[pid], 0, 1),
+                        (sar_path, self.pid_begin + pid2label[pid], 1, 1),
+                    ])
 
         return dataset, dataset_pair
+
+    def _extract_pid(self, img_path):
+        import re
+        filename = osp.basename(img_path)
+        name_without_ext = filename.split('.')[0]
+        
+        match = re.match(r'^(\d+)_s\d+c\d+_(opt|sar)$', name_without_ext)
+        if match:
+            try:
+                return int(match.group(1))
+            except ValueError:
+                pass
+        
+        return hash(name_without_ext) % 1000000
+
+    def _extract_camid(self, img_path):
+        if self._is_sar(img_path):
+            return 1
+        return 0
+
+    def _is_sar(self, img_path):
+        filename = osp.basename(img_path).lower()
+        return 'sar' in filename or img_path.startswith(osp.join(self.train_dir, "sar"))

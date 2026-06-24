@@ -225,8 +225,8 @@ class build_transformer(nn.Module):
         elif pretrain_choice == "clip":
             self.load_param(model_path)
             print("Loading pretrained model from {}".format(model_path))
-        elif pretrain_choice == False:
-            print("Training transformer from scratch.")
+        elif pretrain_choice == False or pretrain_choice == '':
+            print("Skipping backbone pretraining (Test Mode).")
         else:
             raise ValueError("Unsupported pretrain_choice: {}".format(pretrain_choice))
 
@@ -285,14 +285,36 @@ class build_transformer(nn.Module):
                 return feat_fuse
 
     def load_param(self, trained_path):
-        param_dict = torch.load(trained_path)
+        if torch.cuda.is_available():
+            param_dict = torch.load(trained_path)
+        else:
+            param_dict = torch.load(trained_path, map_location=torch.device('cpu'))
         if "state_dict" in param_dict:
             param_dict = param_dict["state_dict"]
+            
         for i in param_dict:
             key = i.replace("module.", "")
-            if key.startswith("classifier"):
+            # 跳过不需要的分类头或之前报错的 logit_scale
+            if key.startswith("classifier") or key == "logit_scale":
                 continue
-            self.state_dict()[key].copy_(param_dict[i])
+                
+            if key in self.state_dict():
+                target_shape = self.state_dict()[key].shape
+                source_shape = param_dict[i].shape
+                
+                # 如果维度不一致（比如 130 vs 129）
+                if target_shape != source_shape:
+                    print(f"Shape mismatch for {key}: model expects {target_shape}, got {source_shape}. Attempting partial copy.")
+                    # 针对 pos_embed 这种三维张量 [1, N, 768]，只拷贝前面的部分
+                    if len(target_shape) == 3 and len(source_shape) == 3:
+                        min_len = min(target_shape[1], source_shape[1])
+                        self.state_dict()[key][:, :min_len, :].copy_(param_dict[i][:, :min_len, :])
+                    else:
+                        print(f"Skipping parameter {key} due to complex shape mismatch.")
+                    continue
+                    
+                # 维度一致的参数直接正常拷贝
+                self.state_dict()[key].copy_(param_dict[i])
 
     def load_param_finetune(self, model_path):
         param_dict = torch.load(model_path)
