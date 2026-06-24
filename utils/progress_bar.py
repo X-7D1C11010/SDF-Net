@@ -1,17 +1,9 @@
-"""
-进度条工具模块：为6个测试步骤提供可视化进度显示
-支持多步骤进度跟踪、ETA计算、强制刷新
-"""
 import sys
 import time
-from datetime import timedelta
 
 
 class MultiStepProgress:
-    """
-    多步骤进度管理器
-    提供6个测试步骤的可视化进度跟踪
-    """
+    """Small terminal progress helper for long evaluation jobs."""
 
     def __init__(self, total_steps=6, step_names=None, log_file=None):
         self.total_steps = total_steps
@@ -20,28 +12,27 @@ class MultiStepProgress:
         self.step_durations = {}
         self.overall_start = time.time()
         self.log_file = log_file
-
         self.step_names = step_names or [
-            "加载数据集",
-            "加载预训练模型",
-            "提取特征向量",
-            "训练匹配器",
-            "计算评价指标",
-            "输出最终结果"
+            "Load data and model",
+            "Extract features",
+            "Calibrate matcher",
+            "Compute distance matrix",
+            "Compute metrics",
+            "Save and print results",
         ]
 
         if len(self.step_names) < total_steps:
             for i in range(len(self.step_names), total_steps):
-                self.step_names.append(f"步骤 {i+1}")
+                self.step_names.append(f"Step {i + 1}")
 
     def _log(self, msg):
         print(msg)
         sys.stdout.flush()
         if self.log_file:
             try:
-                self.log_file.write(msg + '\n')
+                self.log_file.write(msg + "\n")
                 self.log_file.flush()
-            except:
+            except Exception:
                 pass
 
     def _format_time(self, seconds):
@@ -49,21 +40,19 @@ class MultiStepProgress:
             seconds = 0
         if seconds < 60:
             return f"{seconds:.0f}s"
-        elif seconds < 3600:
-            m, s = divmod(int(seconds), 60)
-            return f"{m}m{s:02d}s"
-        else:
-            h, m = divmod(int(seconds), 3600)
-            m, s = divmod(m, 60)
-            return f"{h}h{m:02d}m{s:02d}s"
+        if seconds < 3600:
+            minutes, secs = divmod(int(seconds), 60)
+            return f"{minutes}m{secs:02d}s"
+        hours, minutes = divmod(int(seconds), 3600)
+        minutes, secs = divmod(minutes, 60)
+        return f"{hours}h{minutes:02d}m{secs:02d}s"
 
     def _draw_bar(self, current, total, width=40):
-        if total <= 0:
-            total = 1
-        percent = current / total
+        total = max(total, 1)
+        percent = min(max(current / total, 0.0), 1.0)
         filled = int(width * percent)
-        bar = '#' * filled + '-' * (width - filled)
-        return f"[{bar}] {percent*100:5.1f}%"
+        bar = "#" * filled + "-" * (width - filled)
+        return f"[{bar}] {percent * 100:5.1f}%"
 
     def start_step(self, step_idx, description=""):
         self.current_step = step_idx
@@ -71,9 +60,9 @@ class MultiStepProgress:
 
         self._log("")
         self._log("=" * 80)
-        self._log(f"步骤 [{step_idx+1}/{self.total_steps}] {self.step_names[step_idx]}")
+        self._log(f"Step [{step_idx + 1}/{self.total_steps}] {self.step_names[step_idx]}")
         if description:
-            self._log(f"说明: {description}")
+            self._log(f"Info: {description}")
         self._log("=" * 80)
 
     def update_substep(self, step_idx, sub_current, sub_total, message=""):
@@ -83,72 +72,71 @@ class MultiStepProgress:
         elapsed = time.time() - self.step_start_times[step_idx]
         if sub_current > 0:
             speed = sub_current / elapsed
-            remaining_items = sub_total - sub_current
-            eta = remaining_items / speed if speed > 0 else 0
+            eta = (sub_total - sub_current) / speed if speed > 0 else 0
         else:
             eta = 0
 
-        bar = self._draw_bar(sub_current, sub_total)
-        elapsed_str = self._format_time(elapsed)
-        eta_str = self._format_time(eta)
-
-        status = f"  [进度] {bar} | {sub_current}/{sub_total} | 已用: {elapsed_str} | 剩余: {eta_str}"
+        status = (
+            f"  [progress] {self._draw_bar(sub_current, sub_total)} | "
+            f"{sub_current}/{sub_total} | elapsed: {self._format_time(elapsed)} | "
+            f"eta: {self._format_time(eta)}"
+        )
         if message:
             status += f" | {message}"
-
         self._log(status)
 
     def complete_step(self, step_idx, summary=""):
-        if step_idx in self.step_start_times:
-            duration = time.time() - self.step_start_times[step_idx]
-            self.step_durations[step_idx] = duration
-            duration_str = self._format_time(duration)
+        if step_idx not in self.step_start_times:
+            return
 
-            self._log(f"  [完成] 步骤 [{step_idx+1}/{self.total_steps}] 耗时: {duration_str}")
-            if summary:
-                self._log(f"  [摘要] {summary}")
+        duration = time.time() - self.step_start_times[step_idx]
+        self.step_durations[step_idx] = duration
+        self._log(
+            f"  [done] Step [{step_idx + 1}/{self.total_steps}] "
+            f"time: {self._format_time(duration)}"
+        )
+        if summary:
+            self._log(f"  [summary] {summary}")
 
-            overall_elapsed = time.time() - self.overall_start
-            overall_str = self._format_time(overall_elapsed)
-            completed = sum(1 for i in range(self.total_steps) if i in self.step_durations)
-            remaining = self.total_steps - completed
-            avg_time = overall_elapsed / max(completed, 1)
-            eta = avg_time * remaining
-
-            self._log(f"  [总览] 已完成: {completed}/{self.total_steps} | 总耗时: {overall_str} | 预计剩余: {self._format_time(eta)}")
-            self._log("")
+        overall_elapsed = time.time() - self.overall_start
+        completed = sum(1 for i in range(self.total_steps) if i in self.step_durations)
+        remaining = self.total_steps - completed
+        avg_time = overall_elapsed / max(completed, 1)
+        eta = avg_time * remaining
+        self._log(
+            f"  [overall] completed: {completed}/{self.total_steps} | "
+            f"total: {self._format_time(overall_elapsed)} | "
+            f"remaining: {self._format_time(eta)}"
+        )
+        self._log("")
 
     def print_summary(self):
         self._log("")
         self._log("=" * 80)
-        self._log("运行摘要")
+        self._log("Run summary")
         self._log("=" * 80)
-
-        total_duration = time.time() - self.overall_start
-        self._log(f"总耗时: {self._format_time(total_duration)}")
+        self._log(f"Total time: {self._format_time(time.time() - self.overall_start)}")
         self._log("")
 
         for i in range(self.total_steps):
             if i in self.step_durations:
-                status = "[完成]"
+                status = "[done]"
                 duration = self._format_time(self.step_durations[i])
             elif i in self.step_start_times:
-                status = "[运行中]"
+                status = "[running]"
                 duration = "..."
             else:
-                status = "[未开始]"
+                status = "[pending]"
                 duration = "-"
-            self._log(f"  步骤 [{i+1}/{self.total_steps}] {self.step_names[i]}: {status} ({duration})")
+            self._log(f"  Step [{i + 1}/{self.total_steps}] {self.step_names[i]}: {status} ({duration})")
 
         self._log("=" * 80)
 
 
 class SimpleProgressBar:
-    """
-    简单进度条：用于单步骤内的循环迭代
-    """
+    """Rate-limited progress bar for a single loop."""
 
-    def __init__(self, total, desc="进度", width=40, file=None):
+    def __init__(self, total, desc="Progress", width=40, file=None):
         self.total = total
         self.desc = desc
         self.width = width
@@ -161,9 +149,9 @@ class SimpleProgressBar:
         sys.stdout.flush()
         if self.file:
             try:
-                self.file.write(msg + '\n')
+                self.file.write(msg + "\n")
                 self.file.flush()
-            except:
+            except Exception:
                 pass
 
     def update(self, current, message=""):
@@ -173,19 +161,22 @@ class SimpleProgressBar:
         self.last_update = now
 
         elapsed = now - self.start_time
-        percent = current / max(self.total, 1)
+        percent = min(max(current / max(self.total, 1), 0.0), 1.0)
         filled = int(self.width * percent)
-        bar = '#' * filled + '-' * (self.width - filled)
+        bar = "#" * filled + "-" * (self.width - filled)
 
-        if current > 0:
+        if current > 0 and elapsed > 0:
             speed = current / elapsed
             eta = (self.total - current) / speed if speed > 0 else 0
             eta_str = self._format_time(eta)
         else:
             eta_str = "?"
 
-        elapsed_str = self._format_time(elapsed)
-        status = f"  {self.desc} [{bar}] {current}/{self.total} ({percent*100:.1f}%) | 用时: {elapsed_str} | 剩余: {eta_str}"
+        status = (
+            f"  {self.desc} [{bar}] {current}/{self.total} "
+            f"({percent * 100:.1f}%) | elapsed: {self._format_time(elapsed)} | "
+            f"eta: {eta_str}"
+        )
         if message:
             status += f" | {message}"
         self._log(status)
@@ -195,13 +186,12 @@ class SimpleProgressBar:
             return "?"
         if seconds < 60:
             return f"{seconds:.0f}s"
-        elif seconds < 3600:
-            m, s = divmod(int(seconds), 60)
-            return f"{m}m{s:02d}s"
-        else:
-            h, m = divmod(int(seconds), 3600)
-            m, s = divmod(m, 60)
-            return f"{h}h{m:02d}m"
+        if seconds < 3600:
+            minutes, secs = divmod(int(seconds), 60)
+            return f"{minutes}m{secs:02d}s"
+        hours, minutes = divmod(int(seconds), 3600)
+        minutes, secs = divmod(minutes, 60)
+        return f"{hours}h{minutes:02d}m"
 
-    def finish(self, message="完成"):
+    def finish(self, message="done"):
         self.update(self.total, message)
