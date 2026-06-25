@@ -109,8 +109,9 @@ def make_dataloader(cfg, is_train=True):
     if is_train:
         if len(dataset.train) == 0 or dataset.num_train_pids == 0:
             raise RuntimeError(
-                "Training set is empty. For MergedDataset, expected "
-                "bounding_box_train/opt and bounding_box_train/sar with valid image files."
+                "Training set is empty. For MergedDataset, expected images under "
+                "bounding_box_train with filenames like 019_s3042c001_sar.png "
+                "or 024_s19351c001_opt.jpg."
             )
         train_set = ImageDataset(dataset.train, train_transforms)
         train_set_normal = ImageDataset(dataset.train, val_transforms)
@@ -229,7 +230,8 @@ def make_dataloader_pair(cfg):
     cam_num = dataset.num_train_pair_cams
     if len(dataset.train_pair) == 0 or num_classes == 0:
         raise RuntimeError(
-            "Pair training set is empty. Check that each training ID has both opt/RGB and SAR images."
+            "Pair training set is empty. Check that each training ID has both opt/RGB "
+            "and SAR images, identified by the final filename token after '_'."
         )
 
     if cfg.SOLVER.IMS_PER_BATCH % 2 != 0:

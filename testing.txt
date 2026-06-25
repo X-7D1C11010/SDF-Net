@@ -1,0 +1,433 @@
+(pytorch) lixiang@star-003:/ssd_data/lixiang_data/SDF-Net$ python analyze_reid_dataset.py --config_file configs/SDF-Net_Multi.yml
+================================================================================
+MERGED REID DATASET AUDIT
+================================================================================
+Root: /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged
+  OK  /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged/bounding_box_train
+  MISS /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged/bounding_box_train/opt
+  MISS /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged/bounding_box_train/sar
+  OK  /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged/query
+  OK  /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged/bounding_box_test
+
+[train]
+  images:     0
+  ids:        0
+  cameras:    {}
+  modalities: {}
+
+[query]
+  images:     122
+  ids:        122
+  cameras:    {1: 105, 0: 17}
+  modalities: {'sar': 105, 'opt': 17}
+  imgs/id:    min=1, p25=1.0, median=1.0, mean=1.0, p75=1.0, max=1
+
+[gallery]
+  images:     196
+  ids:        122
+  cameras:    {0: 96, 1: 100}
+  modalities: {'opt': 96, 'sar': 100}
+  imgs/id:    min=1, p25=1.0, median=2.0, mean=1.6, p75=2.0, max=2
+
+[train pairs]
+  pairs:      0
+  paired ids: 0
+
+[ID intersections]
+  query & gallery: 122
+  train & query: 0
+  train & gallery: 0
+
+[error] no opt/sar training pairs were found; cross-modal training is invalid.
+(pytorch) lixiang@star-003:/ssd_data/lixiang_data/SDF-Net$ python analyze_reid_dataset.py --config_file configs/SDF-Net_Test.yml
+================================================================================
+MERGED REID DATASET AUDIT
+================================================================================
+Root: /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged
+  OK  /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged/bounding_box_train
+  MISS /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged/bounding_box_train/opt
+  MISS /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged/bounding_box_train/sar
+  OK  /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged/query
+  OK  /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/data/Merged/bounding_box_test
+
+[train]
+  images:     0
+  ids:        0
+  cameras:    {}
+  modalities: {}
+
+[query]
+  images:     26717
+  ids:        44
+  cameras:    {0: 26717}
+  modalities: {'opt': 26717}
+  imgs/id:    min=1, p25=50.8, median=139.0, mean=607.2, p75=929.0, max=3573
+
+[gallery]
+  images:     9214
+  ids:        44
+  cameras:    {1: 9214}
+  modalities: {'sar': 9214}
+  imgs/id:    min=1, p25=13.8, median=42.5, mean=209.4, p75=183.5, max=1408
+
+[train pairs]
+  pairs:      0
+  paired ids: 0
+
+[ID intersections]
+  query & gallery: 44
+  train & query: 0
+  train & gallery: 0
+
+[error] no opt/sar training pairs were found; cross-modal training is invalid.
+(pytorch) lixiang@star-003:/ssd_data/lixiang_data/SDF-Net$ python test_cross_modal.py --config_file configs/SDF-Net_Test.yml --seed 1949 TEST.WEIGHT /ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_Multi/best.pth
+Random seed: 1949
+
+================================================================================
+Step [1/6] Load data and model
+Info: Create dataloader and initialize SDF-Net feature extractor
+================================================================================
+Creating dataloaders...
+=> Merged Dataset loaded
+Dataset statistics:
+  ----------------------------------------
+  subset   | # ids | # images | # cameras
+  ----------------------------------------
+  train    |     0 |        0 |         0
+  query    |    44 |    26717 |         1
+  gallery  |    44 |     9214 |         1
+  ----------------------------------------
+Number of RGB-SAR pair: 0
+  ----------------------------------------
+Dataset statistics:
+  Query samples:   26717
+  Gallery samples: 9214
+Model weights: /ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_Multi/best.pth
+Current Ablation Mode: sum
+using Transformer_type: vit_base_patch16_224_TransOSS as a backbone
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using drop_out rate is : 0.0
+using attn_drop_out rate is : 0.0
+using drop_path rate is : 0.1
+Skipping backbone pretraining (Test Mode).
+===========building transformer===========
+Loading model weights from: /ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_Multi/best.pth
+Loaded pretrained model from /ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_Multi/best.pth | loaded: 168 | partial: 0 | skipped classifier/logit_scale: 2 | unexpected: 0 | shape skipped: 0 | missing non-head: 1
+  Missing non-head model keys (first 20): ['base.mie_embed']
+FeatureExtractor ready on cuda.
+  [done] Step [1/6] time: 4s
+  [summary] query=26717, gallery=9214
+  [overall] completed: 1/6 | total: 4s | remaining: 20s
+
+
+================================================================================
+Step [2/6] Extract features
+Info: Extract normalized features from 35931 images
+================================================================================
+    Starting feature extraction: 1123 batches, batch_size=32
+  features [----------------------------------------] 1/1123 (0.1%) | elapsed: 4s | eta: 1h11m | processed=32
+  features [----------------------------------------] 7/1123 (0.6%) | elapsed: 4s | eta: 11m41s | processed=224
+  features [----------------------------------------] 13/1123 (1.2%) | elapsed: 5s | eta: 7m04s | processed=416
+  features [----------------------------------------] 19/1123 (1.7%) | elapsed: 6s | eta: 5m21s | processed=608
+  features [----------------------------------------] 25/1123 (2.2%) | elapsed: 6s | eta: 4m28s | processed=800
+  features [#---------------------------------------] 31/1123 (2.8%) | elapsed: 7s | eta: 3m54s | processed=992
+  features [#---------------------------------------] 37/1123 (3.3%) | elapsed: 7s | eta: 3m32s | processed=1184
+  features [#---------------------------------------] 43/1123 (3.8%) | elapsed: 8s | eta: 3m16s | processed=1376
+  features [#---------------------------------------] 49/1123 (4.4%) | elapsed: 8s | eta: 3m04s | processed=1568
+  features [#---------------------------------------] 55/1123 (4.9%) | elapsed: 9s | eta: 2m54s | processed=1760
+  features [##--------------------------------------] 61/1123 (5.4%) | elapsed: 10s | eta: 2m46s | processed=1952
+  features [##--------------------------------------] 66/1123 (5.9%) | elapsed: 10s | eta: 2m41s | processed=2112
+  features [##--------------------------------------] 72/1123 (6.4%) | elapsed: 11s | eta: 2m35s | processed=2304
+  features [##--------------------------------------] 78/1123 (6.9%) | elapsed: 11s | eta: 2m30s | processed=2496
+  features [##--------------------------------------] 84/1123 (7.5%) | elapsed: 12s | eta: 2m26s | processed=2688
+  features [###-------------------------------------] 90/1123 (8.0%) | elapsed: 12s | eta: 2m22s | processed=2880
+  features [###-------------------------------------] 95/1123 (8.5%) | elapsed: 13s | eta: 2m20s | processed=3040
+  features [###-------------------------------------] 100/1123 (8.9%) | elapsed: 13s | eta: 2m17s | processed=3200
+  features [###-------------------------------------] 106/1123 (9.4%) | elapsed: 14s | eta: 2m14s | processed=3392
+  features [###-------------------------------------] 112/1123 (10.0%) | elapsed: 15s | eta: 2m11s | processed=3584
+  features [####------------------------------------] 118/1123 (10.5%) | elapsed: 15s | eta: 2m09s | processed=3776
+  features [####------------------------------------] 123/1123 (11.0%) | elapsed: 16s | eta: 2m07s | processed=3936
+  features [####------------------------------------] 129/1123 (11.5%) | elapsed: 16s | eta: 2m05s | processed=4128
+  features [####------------------------------------] 135/1123 (12.0%) | elapsed: 17s | eta: 2m03s | processed=4320
+  features [#####-----------------------------------] 141/1123 (12.6%) | elapsed: 17s | eta: 2m01s | processed=4512
+  features [#####-----------------------------------] 147/1123 (13.1%) | elapsed: 18s | eta: 1m59s | processed=4704
+  features [#####-----------------------------------] 152/1123 (13.5%) | elapsed: 19s | eta: 1m58s | processed=4864
+  features [#####-----------------------------------] 158/1123 (14.1%) | elapsed: 19s | eta: 1m57s | processed=5056
+  features [#####-----------------------------------] 164/1123 (14.6%) | elapsed: 20s | eta: 1m55s | processed=5248
+  features [######----------------------------------] 170/1123 (15.1%) | elapsed: 20s | eta: 1m54s | processed=5440
+  features [######----------------------------------] 176/1123 (15.7%) | elapsed: 21s | eta: 1m52s | processed=5632
+  features [######----------------------------------] 181/1123 (16.1%) | elapsed: 22s | eta: 1m51s | processed=5792
+  features [######----------------------------------] 187/1123 (16.7%) | elapsed: 22s | eta: 1m50s | processed=5984
+  features [######----------------------------------] 193/1123 (17.2%) | elapsed: 23s | eta: 1m49s | processed=6176
+  features [#######---------------------------------] 199/1123 (17.7%) | elapsed: 23s | eta: 1m48s | processed=6368
+  features [#######---------------------------------] 204/1123 (18.2%) | elapsed: 24s | eta: 1m47s | processed=6528
+  features [#######---------------------------------] 209/1123 (18.6%) | elapsed: 24s | eta: 1m46s | processed=6688
+  features [#######---------------------------------] 215/1123 (19.1%) | elapsed: 25s | eta: 1m45s | processed=6880
+  features [#######---------------------------------] 221/1123 (19.7%) | elapsed: 25s | eta: 1m43s | processed=7072
+  features [########--------------------------------] 227/1123 (20.2%) | elapsed: 26s | eta: 1m42s | processed=7264
+  features [########--------------------------------] 233/1123 (20.7%) | elapsed: 27s | eta: 1m41s | processed=7456
+  features [########--------------------------------] 238/1123 (21.2%) | elapsed: 27s | eta: 1m40s | processed=7616
+  features [########--------------------------------] 244/1123 (21.7%) | elapsed: 28s | eta: 1m39s | processed=7808
+  features [########--------------------------------] 250/1123 (22.3%) | elapsed: 28s | eta: 1m38s | processed=8000
+  features [#########-------------------------------] 256/1123 (22.8%) | elapsed: 29s | eta: 1m37s | processed=8192
+  features [#########-------------------------------] 262/1123 (23.3%) | elapsed: 30s | eta: 1m36s | processed=8384
+  features [#########-------------------------------] 268/1123 (23.9%) | elapsed: 30s | eta: 1m35s | processed=8576
+  features [#########-------------------------------] 273/1123 (24.3%) | elapsed: 31s | eta: 1m35s | processed=8736
+  features [#########-------------------------------] 279/1123 (24.8%) | elapsed: 31s | eta: 1m34s | processed=8928
+  features [##########------------------------------] 285/1123 (25.4%) | elapsed: 32s | eta: 1m33s | processed=9120
+  features [##########------------------------------] 291/1123 (25.9%) | elapsed: 32s | eta: 1m32s | processed=9312
+  features [##########------------------------------] 297/1123 (26.4%) | elapsed: 33s | eta: 1m31s | processed=9504
+  features [##########------------------------------] 303/1123 (27.0%) | elapsed: 34s | eta: 1m30s | processed=9696
+  features [###########-----------------------------] 309/1123 (27.5%) | elapsed: 34s | eta: 1m29s | processed=9888
+  features [###########-----------------------------] 315/1123 (28.0%) | elapsed: 35s | eta: 1m29s | processed=10080
+  features [###########-----------------------------] 321/1123 (28.6%) | elapsed: 35s | eta: 1m28s | processed=10272
+  features [###########-----------------------------] 326/1123 (29.0%) | elapsed: 36s | eta: 1m27s | processed=10432
+  features [###########-----------------------------] 331/1123 (29.5%) | elapsed: 36s | eta: 1m26s | processed=10592
+  features [############----------------------------] 337/1123 (30.0%) | elapsed: 37s | eta: 1m26s | processed=10784
+  features [############----------------------------] 343/1123 (30.5%) | elapsed: 37s | eta: 1m25s | processed=10976
+  features [############----------------------------] 349/1123 (31.1%) | elapsed: 38s | eta: 1m24s | processed=11168
+  features [############----------------------------] 354/1123 (31.5%) | elapsed: 39s | eta: 1m23s | processed=11328
+  features [############----------------------------] 360/1123 (32.1%) | elapsed: 39s | eta: 1m23s | processed=11520
+  features [#############---------------------------] 366/1123 (32.6%) | elapsed: 40s | eta: 1m22s | processed=11712
+  features [#############---------------------------] 372/1123 (33.1%) | elapsed: 40s | eta: 1m21s | processed=11904
+  features [#############---------------------------] 377/1123 (33.6%) | elapsed: 41s | eta: 1m20s | processed=12064
+  features [#############---------------------------] 382/1123 (34.0%) | elapsed: 41s | eta: 1m20s | processed=12224
+  features [#############---------------------------] 388/1123 (34.6%) | elapsed: 42s | eta: 1m19s | processed=12416
+  features [##############--------------------------] 394/1123 (35.1%) | elapsed: 43s | eta: 1m18s | processed=12608
+  features [##############--------------------------] 400/1123 (35.6%) | elapsed: 43s | eta: 1m18s | processed=12800
+  features [##############--------------------------] 405/1123 (36.1%) | elapsed: 44s | eta: 1m17s | processed=12960
+  features [##############--------------------------] 410/1123 (36.5%) | elapsed: 44s | eta: 1m16s | processed=13120
+  features [##############--------------------------] 416/1123 (37.0%) | elapsed: 45s | eta: 1m16s | processed=13312
+  features [###############-------------------------] 422/1123 (37.6%) | elapsed: 45s | eta: 1m15s | processed=13504
+  features [###############-------------------------] 428/1123 (38.1%) | elapsed: 46s | eta: 1m14s | processed=13696
+  features [###############-------------------------] 434/1123 (38.6%) | elapsed: 47s | eta: 1m13s | processed=13888
+  features [###############-------------------------] 440/1123 (39.2%) | elapsed: 47s | eta: 1m13s | processed=14080
+  features [###############-------------------------] 446/1123 (39.7%) | elapsed: 48s | eta: 1m12s | processed=14272
+  features [################------------------------] 452/1123 (40.2%) | elapsed: 48s | eta: 1m11s | processed=14464
+  features [################------------------------] 458/1123 (40.8%) | elapsed: 49s | eta: 1m10s | processed=14656
+  features [################------------------------] 464/1123 (41.3%) | elapsed: 49s | eta: 1m10s | processed=14848
+  features [################------------------------] 470/1123 (41.9%) | elapsed: 50s | eta: 1m09s | processed=15040
+  features [################------------------------] 475/1123 (42.3%) | elapsed: 51s | eta: 1m08s | processed=15200
+  features [#################-----------------------] 481/1123 (42.8%) | elapsed: 51s | eta: 1m08s | processed=15392
+  features [#################-----------------------] 487/1123 (43.4%) | elapsed: 52s | eta: 1m07s | processed=15584
+  features [#################-----------------------] 493/1123 (43.9%) | elapsed: 52s | eta: 1m06s | processed=15776
+  features [#################-----------------------] 499/1123 (44.4%) | elapsed: 53s | eta: 1m06s | processed=15968
+  features [#################-----------------------] 505/1123 (45.0%) | elapsed: 53s | eta: 1m05s | processed=16160
+  features [##################----------------------] 511/1123 (45.5%) | elapsed: 54s | eta: 1m04s | processed=16352
+  features [##################----------------------] 517/1123 (46.0%) | elapsed: 55s | eta: 1m04s | processed=16544
+  features [##################----------------------] 523/1123 (46.6%) | elapsed: 55s | eta: 1m03s | processed=16736
+  features [##################----------------------] 529/1123 (47.1%) | elapsed: 56s | eta: 1m02s | processed=16928
+  features [###################---------------------] 534/1123 (47.6%) | elapsed: 56s | eta: 1m02s | processed=17088
+  features [###################---------------------] 540/1123 (48.1%) | elapsed: 57s | eta: 1m01s | processed=17280
+  features [###################---------------------] 546/1123 (48.6%) | elapsed: 58s | eta: 1m00s | processed=17472
+  features [###################---------------------] 552/1123 (49.2%) | elapsed: 58s | eta: 1m00s | processed=17664
+  features [###################---------------------] 558/1123 (49.7%) | elapsed: 59s | eta: 59s | processed=17856
+  features [####################--------------------] 564/1123 (50.2%) | elapsed: 59s | eta: 59s | processed=18048
+  features [####################--------------------] 569/1123 (50.7%) | elapsed: 60s | eta: 58s | processed=18208
+  features [####################--------------------] 574/1123 (51.1%) | elapsed: 1m00s | eta: 58s | processed=18368
+  features [####################--------------------] 580/1123 (51.6%) | elapsed: 1m00s | eta: 57s | processed=18560
+  features [####################--------------------] 586/1123 (52.2%) | elapsed: 1m01s | eta: 56s | processed=18752
+  features [#####################-------------------] 592/1123 (52.7%) | elapsed: 1m02s | eta: 56s | processed=18944
+  features [#####################-------------------] 598/1123 (53.3%) | elapsed: 1m02s | eta: 55s | processed=19136
+  features [#####################-------------------] 604/1123 (53.8%) | elapsed: 1m03s | eta: 54s | processed=19328
+  features [#####################-------------------] 609/1123 (54.2%) | elapsed: 1m03s | eta: 54s | processed=19488
+  features [#####################-------------------] 615/1123 (54.8%) | elapsed: 1m04s | eta: 53s | processed=19680
+  features [######################------------------] 621/1123 (55.3%) | elapsed: 1m04s | eta: 53s | processed=19872
+  features [######################------------------] 627/1123 (55.8%) | elapsed: 1m05s | eta: 52s | processed=20064
+  features [######################------------------] 633/1123 (56.4%) | elapsed: 1m06s | eta: 51s | processed=20256
+  features [######################------------------] 639/1123 (56.9%) | elapsed: 1m06s | eta: 51s | processed=20448
+  features [######################------------------] 644/1123 (57.3%) | elapsed: 1m07s | eta: 50s | processed=20608
+  features [#######################-----------------] 650/1123 (57.9%) | elapsed: 1m07s | eta: 49s | processed=20800
+  features [#######################-----------------] 656/1123 (58.4%) | elapsed: 1m08s | eta: 49s | processed=20992
+  features [#######################-----------------] 662/1123 (58.9%) | elapsed: 1m09s | eta: 48s | processed=21184
+  features [#######################-----------------] 668/1123 (59.5%) | elapsed: 1m09s | eta: 47s | processed=21376
+  features [########################----------------] 674/1123 (60.0%) | elapsed: 1m10s | eta: 47s | processed=21568
+  features [########################----------------] 679/1123 (60.5%) | elapsed: 1m10s | eta: 46s | processed=21728
+  features [########################----------------] 685/1123 (61.0%) | elapsed: 1m11s | eta: 46s | processed=21920
+  features [########################----------------] 691/1123 (61.5%) | elapsed: 1m11s | eta: 45s | processed=22112
+  features [########################----------------] 697/1123 (62.1%) | elapsed: 1m12s | eta: 44s | processed=22304
+  features [#########################---------------] 703/1123 (62.6%) | elapsed: 1m13s | eta: 44s | processed=22496
+  features [#########################---------------] 709/1123 (63.1%) | elapsed: 1m13s | eta: 43s | processed=22688
+  features [#########################---------------] 715/1123 (63.7%) | elapsed: 1m14s | eta: 42s | processed=22880
+  features [#########################---------------] 720/1123 (64.1%) | elapsed: 1m14s | eta: 42s | processed=23040
+  features [#########################---------------] 726/1123 (64.6%) | elapsed: 1m15s | eta: 41s | processed=23232
+  features [##########################--------------] 732/1123 (65.2%) | elapsed: 1m16s | eta: 41s | processed=23424
+  features [##########################--------------] 738/1123 (65.7%) | elapsed: 1m16s | eta: 40s | processed=23616
+  features [##########################--------------] 744/1123 (66.3%) | elapsed: 1m17s | eta: 39s | processed=23808
+  features [##########################--------------] 749/1123 (66.7%) | elapsed: 1m17s | eta: 39s | processed=23968
+  features [##########################--------------] 754/1123 (67.1%) | elapsed: 1m18s | eta: 38s | processed=24128
+  features [###########################-------------] 760/1123 (67.7%) | elapsed: 1m18s | eta: 38s | processed=24320
+  features [###########################-------------] 766/1123 (68.2%) | elapsed: 1m19s | eta: 37s | processed=24512
+  features [###########################-------------] 772/1123 (68.7%) | elapsed: 1m20s | eta: 36s | processed=24704
+  features [###########################-------------] 778/1123 (69.3%) | elapsed: 1m20s | eta: 36s | processed=24896
+  features [###########################-------------] 784/1123 (69.8%) | elapsed: 1m21s | eta: 35s | processed=25088
+  features [############################------------] 790/1123 (70.3%) | elapsed: 1m21s | eta: 34s | processed=25280
+  features [############################------------] 796/1123 (70.9%) | elapsed: 1m22s | eta: 34s | processed=25472
+  features [############################------------] 801/1123 (71.3%) | elapsed: 1m22s | eta: 33s | processed=25632
+  features [############################------------] 806/1123 (71.8%) | elapsed: 1m23s | eta: 33s | processed=25792
+  features [############################------------] 812/1123 (72.3%) | elapsed: 1m23s | eta: 32s | processed=25984
+  features [#############################-----------] 818/1123 (72.8%) | elapsed: 1m24s | eta: 32s | processed=26176
+  features [#############################-----------] 824/1123 (73.4%) | elapsed: 1m25s | eta: 31s | processed=26368
+  features [#############################-----------] 830/1123 (73.9%) | elapsed: 1m25s | eta: 30s | processed=26560
+  features [#############################-----------] 836/1123 (74.4%) | elapsed: 1m26s | eta: 30s | processed=26752
+  features [#############################-----------] 842/1123 (75.0%) | elapsed: 1m26s | eta: 29s | processed=26944
+  features [##############################----------] 848/1123 (75.5%) | elapsed: 1m27s | eta: 28s | processed=27136
+  features [##############################----------] 854/1123 (76.0%) | elapsed: 1m28s | eta: 28s | processed=27328
+  features [##############################----------] 859/1123 (76.5%) | elapsed: 1m28s | eta: 27s | processed=27488
+  features [##############################----------] 864/1123 (76.9%) | elapsed: 1m29s | eta: 27s | processed=27648
+  features [##############################----------] 870/1123 (77.5%) | elapsed: 1m29s | eta: 26s | processed=27840
+  features [###############################---------] 876/1123 (78.0%) | elapsed: 1m30s | eta: 25s | processed=28032
+  features [###############################---------] 882/1123 (78.5%) | elapsed: 1m30s | eta: 25s | processed=28224
+  features [###############################---------] 888/1123 (79.1%) | elapsed: 1m31s | eta: 24s | processed=28416
+  features [###############################---------] 894/1123 (79.6%) | elapsed: 1m31s | eta: 24s | processed=28608
+  features [################################--------] 900/1123 (80.1%) | elapsed: 1m32s | eta: 23s | processed=28800
+  features [################################--------] 906/1123 (80.7%) | elapsed: 1m33s | eta: 22s | processed=28992
+  features [################################--------] 912/1123 (81.2%) | elapsed: 1m33s | eta: 22s | processed=29184
+  features [################################--------] 918/1123 (81.7%) | elapsed: 1m34s | eta: 21s | processed=29376
+  features [################################--------] 924/1123 (82.3%) | elapsed: 1m34s | eta: 20s | processed=29568
+  features [#################################-------] 930/1123 (82.8%) | elapsed: 1m35s | eta: 20s | processed=29760
+  features [#################################-------] 936/1123 (83.3%) | elapsed: 1m36s | eta: 19s | processed=29952
+  features [#################################-------] 942/1123 (83.9%) | elapsed: 1m36s | eta: 19s | processed=30144
+  features [#################################-------] 947/1123 (84.3%) | elapsed: 1m37s | eta: 18s | processed=30304
+  features [#################################-------] 953/1123 (84.9%) | elapsed: 1m37s | eta: 17s | processed=30496
+  features [##################################------] 959/1123 (85.4%) | elapsed: 1m38s | eta: 17s | processed=30688
+  features [##################################------] 965/1123 (85.9%) | elapsed: 1m38s | eta: 16s | processed=30880
+  features [##################################------] 971/1123 (86.5%) | elapsed: 1m39s | eta: 16s | processed=31072
+  features [##################################------] 977/1123 (87.0%) | elapsed: 1m40s | eta: 15s | processed=31264
+  features [###################################-----] 983/1123 (87.5%) | elapsed: 1m40s | eta: 14s | processed=31456
+  features [###################################-----] 988/1123 (88.0%) | elapsed: 1m41s | eta: 14s | processed=31616
+  features [###################################-----] 993/1123 (88.4%) | elapsed: 1m41s | eta: 13s | processed=31776
+  features [###################################-----] 999/1123 (89.0%) | elapsed: 1m42s | eta: 13s | processed=31968
+  features [###################################-----] 1005/1123 (89.5%) | elapsed: 1m42s | eta: 12s | processed=32160
+  features [####################################----] 1011/1123 (90.0%) | elapsed: 1m43s | eta: 11s | processed=32352
+  features [####################################----] 1017/1123 (90.6%) | elapsed: 1m44s | eta: 11s | processed=32544
+  features [####################################----] 1023/1123 (91.1%) | elapsed: 1m44s | eta: 10s | processed=32736
+  features [####################################----] 1029/1123 (91.6%) | elapsed: 1m45s | eta: 10s | processed=32928
+  features [####################################----] 1035/1123 (92.2%) | elapsed: 1m45s | eta: 9s | processed=33120
+  features [#####################################---] 1041/1123 (92.7%) | elapsed: 1m46s | eta: 8s | processed=33312
+  features [#####################################---] 1047/1123 (93.2%) | elapsed: 1m46s | eta: 8s | processed=33504
+  features [#####################################---] 1053/1123 (93.8%) | elapsed: 1m47s | eta: 7s | processed=33696
+  features [#####################################---] 1058/1123 (94.2%) | elapsed: 1m48s | eta: 7s | processed=33856
+  features [#####################################---] 1064/1123 (94.7%) | elapsed: 1m48s | eta: 6s | processed=34048
+  features [######################################--] 1070/1123 (95.3%) | elapsed: 1m49s | eta: 5s | processed=34240
+  features [######################################--] 1075/1123 (95.7%) | elapsed: 1m49s | eta: 5s | processed=34400
+  features [######################################--] 1080/1123 (96.2%) | elapsed: 1m50s | eta: 4s | processed=34560
+  features [######################################--] 1086/1123 (96.7%) | elapsed: 1m50s | eta: 4s | processed=34752
+  features [######################################--] 1092/1123 (97.2%) | elapsed: 1m51s | eta: 3s | processed=34944
+  features [#######################################-] 1097/1123 (97.7%) | elapsed: 1m52s | eta: 3s | processed=35104
+  features [#######################################-] 1102/1123 (98.1%) | elapsed: 1m52s | eta: 2s | processed=35264
+  features [#######################################-] 1108/1123 (98.7%) | elapsed: 1m53s | eta: 2s | processed=35456
+  features [#######################################-] 1114/1123 (99.2%) | elapsed: 1m53s | eta: 1s | processed=35648
+  features [#######################################-] 1120/1123 (99.7%) | elapsed: 1m54s | eta: 0s | processed=35840
+  features [########################################] 1123/1123 (100.0%) | elapsed: 1m54s | eta: 0s | processed=35931
+    Feature extraction done in 114.81s, shape=(35931, 768)
+  features [########################################] 1123/1123 (100.0%) | elapsed: 1m54s | eta: 0s | done in 114.8s
+Feature shape: (35931, 768)
+  [done] Step [2/6] time: 1m54s
+  [summary] query_features=(26717, 768), gallery_features=(9214, 768)
+  [overall] completed: 2/6 | total: 1m58s | remaining: 3m57s
+
+
+================================================================================
+Step [3/6] Calibrate matcher
+Info: Calibrate threshold matcher with cosine_distance
+================================================================================
+  [done] Step [3/6] time: 4s
+  [summary] calibration={'threshold': 0.6533150672912598, 'num_pairs': 246170438}, time=3.8s
+  [overall] completed: 3/6 | total: 2m02s | remaining: 2m02s
+
+
+================================================================================
+Step [4/6] Compute distance matrix
+Info: Compute 26717x9214 metric matrix
+================================================================================
+
+================================================================================
+Step [5/6] Compute metrics
+Info: Compute matching and ReID metrics
+================================================================================
+      Reusing cached metric matrix (26717 x 9214)...
+      Metric matrix computed in 0.00s
+      Threshold matching computed in 4.29s
+      Sorting gallery candidates for ranking metrics...
+      Ranking sort completed in 6.69s
+      Evaluation completed in 47.26s
+Full matrices were not saved. Pass --save_matrices to keep .npy matrices.
+Results saved to: ./logs/SDF-Net_Test/best/cross_modal_results
+  [done] Step [4/6] time: 48s
+  [summary] metric matrix ready
+  [overall] completed: 4/6 | total: 2m51s | remaining: 1m25s
+
+  [done] Step [5/6] time: 48s
+  [summary] metrics ready
+  [overall] completed: 5/6 | total: 2m51s | remaining: 34s
+
+
+================================================================================
+Step [6/6] Save and print results
+Info: Print and save summary
+================================================================================
+======================================================================
+CROSS-MODAL MATCHING RESULTS
+======================================================================
+Distance metric:   cosine_distance
+Metric type:       distance
+Classifier:        threshold
+Params:            {'distance_metric': 'cosine_distance', 'classifier_type': 'threshold', 'require_mutual': False, 'threshold': 0.6533150672912598, 'threshold_strategy': 'mad', 'threshold_percentile': 95.0, 'threshold_mad_scale': 3.0, 'calibration_stats': {'strategy': 'mad', 'metric_type': 'distance', 'threshold': 0.6533150672912598, 'best_min': 0.04819762706756592, 'best_max': 0.7742336988449097, 'best_mean': 0.38343337178230286, 'best_median': 0.3816981315612793, 'best_std': 0.09397219121456146, 'best_count': 26717}}
+
+--- Threshold Matching ---
+Accepted pairs:    15932685
+Queries matched:   26628/26717
+Avg/query:         596.3501
+
+--- Binary Pair Metrics ---
+Accuracy:          0.9001
+Precision:         0.0377
+Recall:            0.0609
+F1:                0.0466
+Balanced Acc:      0.4980
+Positive rate:     0.0401
+All-neg baseline:  0.9599
+
+--- Distance Diagnostics ---
+Best-pos mean:     0.6774
+Best-neg mean:     0.3844
+Margin mean:       -0.2930
+Pos margin rate:   0.0257
+Separation score:  -2.3144
+
+--- Threshold Top-k Metrics ---
+Top-1 Acc:        0.0256
+Top-1 Coverage:   0.9967
+Top-1 Precision:  0.0256
+Top-5 Acc:        0.0499
+Top-5 Coverage:   0.9967
+Top-5 Precision:  0.0275
+
+--- ReID Ranking Metrics ---
+mAP:               0.0585
+Rank-1  :         0.0257
+Rank-5  :         0.0500
+Rank-10 :         0.0713
+Rank-20 :         0.0987
+======================================================================
+  [done] Step [6/6] time: 0s
+  [summary] saved to ./logs/SDF-Net_Test/best/cross_modal_results
+  [overall] completed: 6/6 | total: 2m51s | remaining: 0s
+
+
+Testing completed.
+
+================================================================================
+Run summary
+================================================================================
+Total time: 2m51s
+
+  Step [1/6] Load data and model: [done] (4s)
+  Step [2/6] Extract features: [done] (1m54s)
+  Step [3/6] Calibrate matcher: [done] (4s)
+  Step [4/6] Compute distance matrix: [done] (48s)
+  Step [5/6] Compute metrics: [done] (48s)
+  Step [6/6] Save and print results: [done] (0s)
+================================================================================

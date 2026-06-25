@@ -18,7 +18,7 @@ def parse_args():
 def summarize_split(name, split, dataset):
     pids = [pid for _, pid, _, _ in split]
     cams = [camid for _, _, camid, _ in split]
-    modalities = ["sar" if dataset._is_sar(path) else "opt" for path, _, _, _ in split]
+    modalities = [dataset._extract_modality(path) for path, _, _, _ in split]
     per_pid = Counter(pids)
 
     print(f"\n[{name}]")
@@ -63,9 +63,12 @@ def main():
     print("MERGED REID DATASET AUDIT")
     print("=" * 80)
     print(f"Root: {root}")
-    for rel in ["bounding_box_train", "bounding_box_train/opt", "bounding_box_train/sar", "query", "bounding_box_test"]:
+    for rel in ["bounding_box_train", "query", "bounding_box_test"]:
         path = os.path.join(root, rel)
         print(f"  {'OK ' if os.path.exists(path) else 'MISS'} {path}")
+    for rel in ["bounding_box_train/opt", "bounding_box_train/sar"]:
+        path = os.path.join(root, rel)
+        print(f"  {'OK ' if os.path.exists(path) else 'SKIP'} {path} (optional; modality is parsed from filename)")
 
     dataset = MergedDataset(root=root, is_train=True, verbose=False)
 

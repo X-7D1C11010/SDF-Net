@@ -106,9 +106,7 @@ class MergedDataset(BaseImageDataset):
             raise RuntimeError("'{}' is not available".format(self.gallery_dir))
 
     def _process_dir(self, dir_path, relabel=False):
-        img_paths = glob.glob(osp.join(dir_path, "*.jpg")) + \
-                    glob.glob(osp.join(dir_path, "*.jpeg")) + \
-                    glob.glob(osp.join(dir_path, "*.png"))
+        img_paths = self._collect_image_paths(dir_path)
 
         pid_container = set()
         for img_path in sorted(img_paths):
@@ -129,22 +127,7 @@ class MergedDataset(BaseImageDataset):
         return dataset
 
     def _process_dir_train(self, dir_path, relabel=False):
-        opt_dir = osp.join(dir_path, "opt")
-        sar_dir = osp.join(dir_path, "sar")
-
-        opt_paths = []
-        if osp.exists(opt_dir):
-            opt_paths = glob.glob(osp.join(opt_dir, "*.jpg")) + \
-                        glob.glob(osp.join(opt_dir, "*.jpeg")) + \
-                        glob.glob(osp.join(opt_dir, "*.png"))
-
-        sar_paths = []
-        if osp.exists(sar_dir):
-            sar_paths = glob.glob(osp.join(sar_dir, "*.jpg")) + \
-                        glob.glob(osp.join(sar_dir, "*.jpeg")) + \
-                        glob.glob(osp.join(sar_dir, "*.png"))
-
-        all_paths = opt_paths + sar_paths
+        all_paths = self._collect_image_paths(dir_path, recursive=True)
 
         pid_container = set()
         pid2sar = {}
@@ -154,12 +137,13 @@ class MergedDataset(BaseImageDataset):
             pid = self._extract_pid(img_path)
             pid_container.add(pid)
             
-            if self._is_sar(img_path):
+            modality = self._extract_modality(img_path)
+            if modality == "sar":
                 if pid not in pid2sar:
                     pid2sar[pid] = [img_path]
                 else:
                     pid2sar[pid].append(img_path)
-            else:
+            elif modality == "opt":
                 if pid not in pid2opt:
                     pid2opt[pid] = [img_path]
                 else:
@@ -189,6 +173,17 @@ class MergedDataset(BaseImageDataset):
                     ])
 
         return dataset, dataset_pair
+
+    @staticmethod
+    def _collect_image_paths(dir_path, recursive=False):
+        patterns = ("*.jpg", "*.jpeg", "*.png")
+        img_paths = []
+        for pattern in patterns:
+            if recursive:
+                img_paths.extend(glob.glob(osp.join(dir_path, "**", pattern), recursive=True))
+            else:
+                img_paths.extend(glob.glob(osp.join(dir_path, pattern)))
+        return sorted(set(img_paths))
 
     def _extract_pid(self, img_path):
         import hashlib
@@ -221,6 +216,17 @@ class MergedDataset(BaseImageDataset):
             return 1
         return 0
 
-    def _is_sar(self, img_path):
+    def _extract_modality(self, img_path):
         filename = osp.basename(img_path).lower()
-        return 'sar' in filename or img_path.startswith(osp.join(self.train_dir, "sar"))
+        name_without_ext = osp.splitext(filename)[0]
+        if "_" not in name_without_ext:
+            return "unknown"
+        modality = name_without_ext.rsplit("_", 1)[-1]
+        if modality in ("opt", "rgb", "visible", "vis"):
+            return "opt"
+        if modality in ("sar", "ir"):
+            return "sar"
+        return "unknown"
+
+    def _is_sar(self, img_path):
+        return self._extract_modality(img_path) == "sar"
