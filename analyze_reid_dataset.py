@@ -12,6 +12,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Audit Merged ReID dataset layout and ID distribution")
     parser.add_argument("--config_file", default="configs/SDF-Net_Test.yml", type=str)
     parser.add_argument("--root", default=None, type=str, help="override DATASETS.ROOT_DIR")
+    parser.add_argument(
+        "--eval_only",
+        action="store_true",
+        help="audit query/gallery only; use this for independent test roots without training images",
+    )
     return parser.parse_args()
 
 
@@ -70,17 +75,24 @@ def main():
         path = os.path.join(root, rel)
         print(f"  {'OK ' if os.path.exists(path) else 'SKIP'} {path} (optional; modality is parsed from filename)")
 
-    dataset = MergedDataset(root=root, is_train=True, verbose=False)
+    dataset = MergedDataset(root=root, is_train=not args.eval_only, verbose=False)
 
-    train_ids, train_counts = summarize_split("train", dataset.train, dataset)
+    if args.eval_only:
+        train_ids, train_counts = set(), Counter()
+        print("\n[train]")
+        print("  skipped:    eval_only=True")
+    else:
+        train_ids, train_counts = summarize_split("train", dataset.train, dataset)
     query_ids, query_counts = summarize_split("query", dataset.query, dataset)
     gallery_ids, gallery_counts = summarize_split("gallery", dataset.gallery, dataset)
-    summarize_pairs(dataset)
+    if not args.eval_only:
+        summarize_pairs(dataset)
 
     print("\n[ID intersections]")
     print_intersection("query & gallery", query_ids, gallery_ids)
-    print_intersection("train & query", train_ids, query_ids)
-    print_intersection("train & gallery", train_ids, gallery_ids)
+    if not args.eval_only:
+        print_intersection("train & query", train_ids, query_ids)
+        print_intersection("train & gallery", train_ids, gallery_ids)
 
     missing_query = sorted(list(query_ids - gallery_ids))[:20]
     missing_gallery = sorted(list(gallery_ids - query_ids))[:20]
@@ -89,12 +101,13 @@ def main():
     if missing_gallery:
         print(f"  gallery ids absent from query, first 20: {missing_gallery}")
 
-    low_train_ids = [pid for pid, count in train_counts.items() if count < 2]
-    if low_train_ids:
-        print(f"\n[warning] train IDs with <2 images: {len(low_train_ids)}; first 20: {low_train_ids[:20]}")
+    if not args.eval_only:
+        low_train_ids = [pid for pid, count in train_counts.items() if count < 2]
+        if low_train_ids:
+            print(f"\n[warning] train IDs with <2 images: {len(low_train_ids)}; first 20: {low_train_ids[:20]}")
     if len(query_ids & gallery_ids) == 0:
         print("\n[error] query and gallery have no overlapping IDs; ReID metrics are invalid.")
-    if len(dataset.train_pair) == 0:
+    if not args.eval_only and len(dataset.train_pair) == 0:
         print("\n[error] no opt/sar training pairs were found; cross-modal training is invalid.")
 
 
