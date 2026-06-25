@@ -2,6 +2,9 @@ import numpy as np
 import torch
 
 
+MAX_BROADCAST_BYTES = 8 * 1024**3
+
+
 DISTANCE_METRICS = {
     "euclidean",
     "cosine_distance",
@@ -18,6 +21,18 @@ def _to_numpy(x):
     if isinstance(x, torch.Tensor):
         return x.detach().cpu().numpy()
     return np.asarray(x)
+
+
+def _guard_pairwise_broadcast(qf, gf, metric, max_bytes=MAX_BROADCAST_BYTES):
+    estimated_bytes = int(qf.shape[0]) * int(gf.shape[0]) * int(qf.shape[1]) * np.dtype(np.float32).itemsize
+    if estimated_bytes > max_bytes:
+        raise MemoryError(
+            f"{metric} would allocate about {estimated_bytes / 1024**3:.1f} GiB "
+            f"for a pairwise broadcast tensor with shape "
+            f"({qf.shape[0]}, {gf.shape[0]}, {qf.shape[1]}). "
+            "Use cosine_distance, cosine_similarity, euclidean, or hybrid for large-scale ReID, "
+            "or evaluate this metric on a smaller subset/chunked implementation."
+        )
 
 
 def euclidean_distance(qf, gf, squared=False):
@@ -48,24 +63,28 @@ def cosine_distance(qf, gf):
 def manhattan_distance(qf, gf):
     qf = _to_numpy(qf).astype(np.float32, copy=False)
     gf = _to_numpy(gf).astype(np.float32, copy=False)
+    _guard_pairwise_broadcast(qf, gf, "manhattan")
     return np.abs(qf[:, None, :] - gf[None, :, :]).sum(axis=-1)
 
 
 def chebyshev_distance(qf, gf):
     qf = _to_numpy(qf).astype(np.float32, copy=False)
     gf = _to_numpy(gf).astype(np.float32, copy=False)
+    _guard_pairwise_broadcast(qf, gf, "chebyshev")
     return np.abs(qf[:, None, :] - gf[None, :, :]).max(axis=-1)
 
 
 def minkowski_distance(qf, gf, p=3):
     qf = _to_numpy(qf).astype(np.float32, copy=False)
     gf = _to_numpy(gf).astype(np.float32, copy=False)
+    _guard_pairwise_broadcast(qf, gf, "minkowski")
     return np.power(np.power(np.abs(qf[:, None, :] - gf[None, :, :]), p).sum(axis=-1), 1.0 / p)
 
 
 def mahalanobis_distance(qf, gf, cov_matrix=None, regularization=1e-4):
     qf = _to_numpy(qf).astype(np.float32, copy=False)
     gf = _to_numpy(gf).astype(np.float32, copy=False)
+    _guard_pairwise_broadcast(qf, gf, "mahalanobis")
 
     if cov_matrix is None:
         combined = np.vstack([qf, gf])

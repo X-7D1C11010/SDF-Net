@@ -14,6 +14,19 @@ from utils.cross_modal_matching import CrossModalMatchingPipeline
 from utils.progress_bar import MultiStepProgress, SimpleProgressBar
 
 
+DISTANCE_CHOICES = [
+    "euclidean",
+    "cosine_distance",
+    "cosine_similarity",
+    "manhattan",
+    "chebyshev",
+    "minkowski",
+    "mahalanobis",
+    "hybrid",
+]
+DEFAULT_COMPARE_METRICS = ["cosine_distance", "euclidean", "hybrid"]
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Label-independent cross-modal ReID testing")
     parser.add_argument(
@@ -25,16 +38,7 @@ def parse_args():
     parser.add_argument(
         "--distance_metric",
         default="cosine_distance",
-        choices=[
-            "euclidean",
-            "cosine_distance",
-            "cosine_similarity",
-            "manhattan",
-            "chebyshev",
-            "minkowski",
-            "mahalanobis",
-            "hybrid",
-        ],
+        choices=DISTANCE_CHOICES,
         help="feature metric used for matching",
         type=str,
     )
@@ -92,6 +96,16 @@ def parse_args():
         "--compare_metrics",
         action="store_true",
         help="compare multiple distance metrics with the same extracted features",
+    )
+    parser.add_argument(
+        "--comparison_metrics",
+        nargs="+",
+        choices=DISTANCE_CHOICES,
+        default=None,
+        help=(
+            "metrics used by --compare_metrics; defaults to scalable metrics "
+            f"{DEFAULT_COMPARE_METRICS}"
+        ),
     )
     parser.add_argument(
         "--topk",
@@ -228,7 +242,7 @@ def run_single_metric(args, pipeline, data, progress, save_path):
 
 def run_metric_comparison(args, pipeline, data, save_path):
     q_features, q_pids, q_camids, q_paths, g_features, g_pids, g_camids, g_paths = data
-    metrics_to_compare = ["cosine_distance", "euclidean", "hybrid", "manhattan"]
+    metrics_to_compare = args.comparison_metrics or DEFAULT_COMPARE_METRICS
     results = {}
 
     for idx, metric in enumerate(metrics_to_compare, start=1):
@@ -271,16 +285,18 @@ def run_metric_comparison(args, pipeline, data, save_path):
     print("=" * 70)
     print(
         f"{'Metric':<20} {'mAP':<10} {'Rank-1':<10} "
-        f"{'ThrTop1':<10} {'ThrTop5':<10} {'Precision':<10} {'F1':<10}"
+        f"{'ThrTop1':<10} {'ThrTop5':<10} {'Sep':<10} {'Precision':<10} {'F1':<10}"
     )
     for metric, result in results.items():
         threshold_topk = result.get("threshold_topk", {})
+        diagnostics = result.get("distance_diagnostics", {})
         print(
             f"{metric:<20} "
             f"{result['reid'].get('mAP', 0):<10.4f} "
             f"{result['reid'].get('rank_1', 0):<10.4f} "
             f"{threshold_topk.get('top_1_accuracy', 0):<10.4f} "
             f"{threshold_topk.get('top_5_accuracy', 0):<10.4f} "
+            f"{diagnostics.get('separation_score', 0):<10.4f} "
             f"{result['basic'].get('precision', 0):<10.4f} "
             f"{result['basic'].get('f1', 0):<10.4f}"
         )

@@ -114,8 +114,10 @@ class CrossModalMatchingPipeline:
         basic_metrics = None
         reid_metrics = None
         threshold_topk_metrics = None
+        distance_diagnostics = None
         if q_pids is not None and g_pids is not None:
             basic_metrics = self._compute_basic_metrics(match_matrix, q_pids, g_pids)
+            distance_diagnostics = self._compute_distance_diagnostics(distmat, q_pids, g_pids)
             threshold_topk_metrics = self._compute_threshold_topk_metrics(
                 distmat,
                 match_matrix,
@@ -150,6 +152,7 @@ class CrossModalMatchingPipeline:
         self.results = {
             "matching": matching_summary,
             "basic": basic_metrics or {},
+            "distance_diagnostics": distance_diagnostics or {},
             "threshold_topk": threshold_topk_metrics or {},
             "reid": reid_metrics or {},
             "classifier_params": self.matcher.get_params(),
@@ -223,6 +226,41 @@ class CrossModalMatchingPipeline:
             "fp": fp,
             "fn": fn,
             "tp": tp,
+        }
+
+    @staticmethod
+    def _compute_distance_diagnostics(distmat, q_pids, g_pids):
+        q_pids = np.asarray(q_pids)
+        g_pids = np.asarray(g_pids)
+        best_pos = []
+        best_neg = []
+
+        for q_idx, q_pid in enumerate(q_pids):
+            pos_mask = g_pids == q_pid
+            neg_mask = ~pos_mask
+            if not np.any(pos_mask) or not np.any(neg_mask):
+                continue
+            best_pos.append(float(np.min(distmat[q_idx, pos_mask])))
+            best_neg.append(float(np.min(distmat[q_idx, neg_mask])))
+
+        if not best_pos:
+            return {"valid_queries": 0}
+
+        best_pos = np.asarray(best_pos, dtype=np.float32)
+        best_neg = np.asarray(best_neg, dtype=np.float32)
+        margins = best_neg - best_pos
+        pooled_std = np.sqrt((np.var(best_pos) + np.var(best_neg)) / 2.0)
+
+        return {
+            "valid_queries": int(best_pos.size),
+            "best_positive_mean": float(np.mean(best_pos)),
+            "best_positive_median": float(np.median(best_pos)),
+            "best_negative_mean": float(np.mean(best_neg)),
+            "best_negative_median": float(np.median(best_neg)),
+            "margin_mean": float(np.mean(margins)),
+            "margin_median": float(np.median(margins)),
+            "positive_margin_rate": float(np.mean(margins > 0)),
+            "separation_score": float(np.mean(margins) / pooled_std) if pooled_std > 1e-12 else 0.0,
         }
 
     @staticmethod
@@ -467,6 +505,15 @@ class CrossModalMatchingPipeline:
             print(f"Positive rate:     {basic.get('positive_rate', 0):.4f}")
             print(f"All-neg baseline:  {basic.get('all_negative_accuracy', 0):.4f}")
 
+        diagnostics = self.results.get("distance_diagnostics", {})
+        if diagnostics:
+            print("\n--- Distance Diagnostics ---")
+            print(f"Best-pos mean:     {diagnostics.get('best_positive_mean', 0):.4f}")
+            print(f"Best-neg mean:     {diagnostics.get('best_negative_mean', 0):.4f}")
+            print(f"Margin mean:       {diagnostics.get('margin_mean', 0):.4f}")
+            print(f"Pos margin rate:   {diagnostics.get('positive_margin_rate', 0):.4f}")
+            print(f"Separation score:  {diagnostics.get('separation_score', 0):.4f}")
+
         threshold_topk = self.results.get("threshold_topk", {})
         if threshold_topk:
             print("\n--- Threshold Top-k Metrics ---")
@@ -608,16 +655,18 @@ def compare_distance_metrics(
     print(f"{'=' * 70}")
     print(
         f"{'Metric':<20} {'mAP':<10} {'Rank-1':<10} "
-        f"{'ThrTop1':<10} {'ThrTop5':<10} {'Precision':<10} {'F1':<10}"
+        f"{'ThrTop1':<10} {'ThrTop5':<10} {'Sep':<10} {'Precision':<10} {'F1':<10}"
     )
     for metric, result in results.items():
         threshold_topk = result.get("threshold_topk", {})
+        diagnostics = result.get("distance_diagnostics", {})
         print(
             f"{metric:<20} "
             f"{result['reid'].get('mAP', 0):<10.4f} "
             f"{result['reid'].get('rank_1', 0):<10.4f} "
             f"{threshold_topk.get('top_1_accuracy', 0):<10.4f} "
             f"{threshold_topk.get('top_5_accuracy', 0):<10.4f} "
+            f"{diagnostics.get('separation_score', 0):<10.4f} "
             f"{result['basic'].get('precision', 0):<10.4f} "
             f"{result['basic'].get('f1', 0):<10.4f}"
         )
