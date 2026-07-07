@@ -1,0 +1,592 @@
+nohup: ignoring input
+2026-07-07 18:32:10 transreid INFO: Saving model in the path :./logs/SDF-Net_Multi/
+2026-07-07 18:32:10 transreid INFO: Namespace(config_file='configs/SDF-Net_Multi.yml', opts=[], local_rank=0)
+2026-07-07 18:32:10 transreid INFO: Loaded configuration file configs/SDF-Net_Multi.yml
+2026-07-07 18:32:10 transreid INFO: 
+MODEL:
+  PRETRAIN_CHOICE: 'imagenet'
+  PRETRAIN_PATH: "/ssd_data/lixiang_data/SDF-Net/logs/Pretrain_Backbone_2/custom_vit_b_pretrain_ep100.pth"
+  METRIC_LOSS_TYPE: 'triplet'
+  IF_LABELSMOOTH: 'on'
+  IF_WITH_CENTER: 'no'
+  ID_LOSS_WEIGHT: 0.2
+  TRIPLET_LOSS_WEIGHT: 1.0
+  CM_CONTRAST_LOSS_WEIGHT: 0.5
+  CM_PROTO_LOSS_WEIGHT: 0.5
+  CM_CONTRAST_TEMP: 0.07
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  TRANSFORMER_TYPE: 'vit_base_patch16_224_TransOSS'
+  STRIDE_SIZE: [16, 16]
+  MIE: True
+  MIE_COE: 3.0
+  SSE: True
+  PAIR: False
+  DISENTANGLE: True
+  ABLATION_MODE: "sum"
+  ORTH_LOSS_WEIGHT: 10.0
+  STRUCT_LOSS_WEIGHT: 1.0
+  STRUCT_LAYER_INDEX: 6
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+  PROB: 0.5
+  RE_PROB: 0.2
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+
+DATASETS:
+  NAMES: ('Merged')
+  ROOT_DIR: ('/ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 2
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 150
+  BASE_LR: 0.0005
+  IMS_PER_BATCH: 64
+  WARMUP_METHOD: 'linear'
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: 10
+  LOG_PERIOD: 50
+  EVAL_PERIOD: 5
+  WEIGHT_DECAY:  1e-4
+  WEIGHT_DECAY_BIAS: 1e-4
+  BIAS_LR_FACTOR: 2
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 1
+  RE_RANKING: False
+  WEIGHT: "/ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_Multi/best.pth"
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: "./logs/SDF-Net_Multi/"
+
+2026-07-07 18:32:10 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 2
+  NUM_WORKERS: 8
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: Merged
+  ROOT_DIR: /ssd_data/lixiang_data/Datasets/Opt-SAR-ReID/Cleaned_SDFNet_Data/Merged
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+  PROB: 0.5
+  RE_PROB: 0.2
+  SIZE_TEST: [256, 128]
+  SIZE_TRAIN: [256, 128]
+MODEL:
+  ABLATION_MODE: sum
+  ATT_DROP_RATE: 0.0
+  CM_CONTRAST_LOSS_WEIGHT: 0.5
+  CM_CONTRAST_TEMP: 0.07
+  CM_PROTO_LOSS_WEIGHT: 0.5
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DISENTANGLE: True
+  DIST_TRAIN: False
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 0.2
+  IF_LABELSMOOTH: on
+  IF_WITH_CENTER: no
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  MIE: True
+  MIE_COE: 3.0
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  ORTH_LOSS_WEIGHT: 10.0
+  PAIR: False
+  PRETRAIN_CHOICE: imagenet
+  PRETRAIN_PATH: /ssd_data/lixiang_data/SDF-Net/logs/Pretrain_Backbone_2/custom_vit_b_pretrain_ep100.pth
+  SSE: True
+  STRIDE_SIZE: [16, 16]
+  STRUCT_LAYER_INDEX: 6
+  STRUCT_LOSS_WEIGHT: 1.0
+  TRANSFORMER_TYPE: vit_base_patch16_224_TransOSS
+  TRIPLET_LOSS_WEIGHT: 1.0
+OUTPUT_DIR: ./logs/SDF-Net_Multi/
+SOLVER:
+  BASE_LR: 0.0005
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 10
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 5
+  GAMMA: 0.1
+  IMS_PER_BATCH: 64
+  LARGE_FC_LR: False
+  LOG_PERIOD: 50
+  MARGIN: 0.3
+  MAX_EPOCHS: 150
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1949
+  STEPS: (40, 70)
+  WARMUP_EPOCHS: 5
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 1
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: /ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_Multi/best.pth
+=> Merged Dataset loaded
+Dataset statistics:
+  ----------------------------------------
+  subset   | # ids | # images | # cameras
+  ----------------------------------------
+  train    |   154 |      266 |         2
+  query    |   122 |      122 |         2
+  gallery  |   122 |      196 |         2
+  ----------------------------------------
+Number of RGB-SAR pair: 112
+  ----------------------------------------
+Current Ablation Mode: sum
+using Transformer_type: vit_base_patch16_224_TransOSS as a backbone
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using drop_out rate is : 0.0
+using attn_drop_out rate is : 0.0
+using drop_path rate is : 0.1
+Resizing pos_embed: torch.Size([1, 197, 768]) -> torch.Size([1, 130, 768])
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 130, 768]) with height:16 width: 8
+Extending pos_embed token after resize
+patch_embed_SAR not in the pth
+Loading pretrained model from /ssd_data/lixiang_data/SDF-Net/logs/Pretrain_Backbone_2/custom_vit_b_pretrain_ep100.pth
+===========building transformer===========
+using soft triplet loss for training
+2026-07-07 18:32:11 transreid.train INFO: start training
+/ssd_data/lixiang_data/SDF-Net/processor/processor.py:131: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = amp.GradScaler()
+/ssd_data/lixiang_data/SDF-Net/processor/processor.py:169: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(enabled=True):
+2026-07-07 18:32:12 transreid.train INFO: Epoch[1] done. Loss: 15.568 (Base: 8.203, Orth: 6.967, Struct: 0.398), Acc: 0.000%, Lr: 1.04e-04
+2026-07-07 18:32:13 transreid.train INFO: Epoch[2] done. Loss: 14.106 (Base: 7.561, Orth: 6.157, Struct: 0.388), Acc: 1.562%, Lr: 2.03e-04
+2026-07-07 18:32:14 transreid.train INFO: Epoch[3] done. Loss: 12.068 (Base: 7.347, Orth: 4.321, Struct: 0.400), Acc: 0.391%, Lr: 3.02e-04
+2026-07-07 18:32:15 transreid.train INFO: Epoch[4] done. Loss: 10.016 (Base: 6.790, Orth: 2.840, Struct: 0.385), Acc: 1.562%, Lr: 4.01e-04
+2026-07-07 18:32:16 transreid.train INFO: Epoch[5] done. Loss: 9.413 (Base: 6.867, Orth: 2.152, Struct: 0.395), Acc: 1.172%, Lr: 4.99e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:32:18 transreid.train INFO: Validation Results - Epoch: 5
+2026-07-07 18:32:18 transreid.train INFO: mAP: 62.5%
+2026-07-07 18:32:18 transreid.train INFO: CMC curve, Rank-1  : 84.4%
+2026-07-07 18:32:18 transreid.train INFO: CMC curve, Rank-5  : 91.0%
+2026-07-07 18:32:18 transreid.train INFO: CMC curve, Rank-10 : 92.6%
+2026-07-07 18:32:19 transreid.train INFO: Update Best mAP: 62.5% at Epoch 5
+2026-07-07 18:32:19 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:32:20 transreid.train INFO: Epoch[6] done. Loss: 8.704 (Base: 6.512, Orth: 1.799, Struct: 0.393), Acc: 1.562%, Lr: 4.98e-04
+2026-07-07 18:32:21 transreid.train INFO: Epoch[7] done. Loss: 8.202 (Base: 6.452, Orth: 1.343, Struct: 0.408), Acc: 4.297%, Lr: 4.97e-04
+2026-07-07 18:32:22 transreid.train INFO: Epoch[8] done. Loss: 7.680 (Base: 6.333, Orth: 0.952, Struct: 0.395), Acc: 3.906%, Lr: 4.97e-04
+2026-07-07 18:32:23 transreid.train INFO: Epoch[9] done. Loss: 6.987 (Base: 5.774, Orth: 0.829, Struct: 0.384), Acc: 5.078%, Lr: 4.96e-04
+2026-07-07 18:32:24 transreid.train INFO: Epoch[10] done. Loss: 6.938 (Base: 5.821, Orth: 0.749, Struct: 0.368), Acc: 11.719%, Lr: 4.95e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:32:26 transreid.train INFO: Validation Results - Epoch: 10
+2026-07-07 18:32:26 transreid.train INFO: mAP: 62.9%
+2026-07-07 18:32:26 transreid.train INFO: CMC curve, Rank-1  : 84.4%
+2026-07-07 18:32:26 transreid.train INFO: CMC curve, Rank-5  : 90.2%
+2026-07-07 18:32:26 transreid.train INFO: CMC curve, Rank-10 : 91.8%
+2026-07-07 18:32:27 transreid.train INFO: Update Best mAP: 62.9% at Epoch 10
+2026-07-07 18:32:27 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:32:28 transreid.train INFO: Epoch[11] done. Loss: 6.688 (Base: 5.521, Orth: 0.788, Struct: 0.378), Acc: 9.766%, Lr: 4.93e-04
+2026-07-07 18:32:29 transreid.train INFO: Epoch[12] done. Loss: 6.797 (Base: 5.695, Orth: 0.734, Struct: 0.369), Acc: 14.062%, Lr: 4.92e-04
+2026-07-07 18:32:30 transreid.train INFO: Epoch[13] done. Loss: 6.331 (Base: 5.288, Orth: 0.656, Struct: 0.387), Acc: 15.625%, Lr: 4.91e-04
+2026-07-07 18:32:31 transreid.train INFO: Epoch[14] done. Loss: 6.329 (Base: 5.300, Orth: 0.655, Struct: 0.374), Acc: 16.797%, Lr: 4.89e-04
+2026-07-07 18:32:32 transreid.train INFO: Epoch[15] done. Loss: 6.313 (Base: 5.290, Orth: 0.654, Struct: 0.369), Acc: 17.188%, Lr: 4.88e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:32:34 transreid.train INFO: Validation Results - Epoch: 15
+2026-07-07 18:32:34 transreid.train INFO: mAP: 62.5%
+2026-07-07 18:32:34 transreid.train INFO: CMC curve, Rank-1  : 82.8%
+2026-07-07 18:32:34 transreid.train INFO: CMC curve, Rank-5  : 91.0%
+2026-07-07 18:32:34 transreid.train INFO: CMC curve, Rank-10 : 92.6%
+2026-07-07 18:32:35 transreid.train INFO: Epoch[16] done. Loss: 6.243 (Base: 5.174, Orth: 0.688, Struct: 0.381), Acc: 15.625%, Lr: 4.86e-04
+2026-07-07 18:32:36 transreid.train INFO: Epoch[17] done. Loss: 5.853 (Base: 4.911, Orth: 0.570, Struct: 0.373), Acc: 19.141%, Lr: 4.84e-04
+2026-07-07 18:32:37 transreid.train INFO: Epoch[18] done. Loss: 5.901 (Base: 4.940, Orth: 0.590, Struct: 0.370), Acc: 23.047%, Lr: 4.82e-04
+2026-07-07 18:32:38 transreid.train INFO: Epoch[19] done. Loss: 5.928 (Base: 4.993, Orth: 0.550, Struct: 0.385), Acc: 22.266%, Lr: 4.81e-04
+2026-07-07 18:32:39 transreid.train INFO: Epoch[20] done. Loss: 5.938 (Base: 4.983, Orth: 0.588, Struct: 0.366), Acc: 24.609%, Lr: 4.78e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:32:42 transreid.train INFO: Validation Results - Epoch: 20
+2026-07-07 18:32:42 transreid.train INFO: mAP: 62.6%
+2026-07-07 18:32:42 transreid.train INFO: CMC curve, Rank-1  : 82.0%
+2026-07-07 18:32:42 transreid.train INFO: CMC curve, Rank-5  : 91.0%
+2026-07-07 18:32:42 transreid.train INFO: CMC curve, Rank-10 : 93.4%
+2026-07-07 18:32:43 transreid.train INFO: Epoch[21] done. Loss: 5.649 (Base: 4.796, Orth: 0.499, Struct: 0.355), Acc: 24.609%, Lr: 4.76e-04
+2026-07-07 18:32:44 transreid.train INFO: Epoch[22] done. Loss: 5.591 (Base: 4.709, Orth: 0.525, Struct: 0.357), Acc: 29.297%, Lr: 4.74e-04
+2026-07-07 18:32:45 transreid.train INFO: Epoch[23] done. Loss: 5.725 (Base: 4.838, Orth: 0.512, Struct: 0.375), Acc: 30.859%, Lr: 4.72e-04
+2026-07-07 18:32:46 transreid.train INFO: Epoch[24] done. Loss: 5.442 (Base: 4.622, Orth: 0.463, Struct: 0.357), Acc: 30.469%, Lr: 4.69e-04
+2026-07-07 18:32:47 transreid.train INFO: Epoch[25] done. Loss: 5.555 (Base: 4.675, Orth: 0.506, Struct: 0.374), Acc: 27.734%, Lr: 4.67e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:32:49 transreid.train INFO: Validation Results - Epoch: 25
+2026-07-07 18:32:49 transreid.train INFO: mAP: 63.2%
+2026-07-07 18:32:49 transreid.train INFO: CMC curve, Rank-1  : 82.8%
+2026-07-07 18:32:49 transreid.train INFO: CMC curve, Rank-5  : 91.8%
+2026-07-07 18:32:49 transreid.train INFO: CMC curve, Rank-10 : 93.4%
+2026-07-07 18:32:49 transreid.train INFO: Update Best mAP: 63.2% at Epoch 25
+2026-07-07 18:32:49 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:32:50 transreid.train INFO: Epoch[26] done. Loss: 5.370 (Base: 4.531, Orth: 0.481, Struct: 0.358), Acc: 33.984%, Lr: 4.64e-04
+2026-07-07 18:32:51 transreid.train INFO: Epoch[27] done. Loss: 5.488 (Base: 4.683, Orth: 0.442, Struct: 0.364), Acc: 33.984%, Lr: 4.61e-04
+2026-07-07 18:32:52 transreid.train INFO: Epoch[28] done. Loss: 5.325 (Base: 4.525, Orth: 0.443, Struct: 0.357), Acc: 32.812%, Lr: 4.58e-04
+2026-07-07 18:32:53 transreid.train INFO: Epoch[29] done. Loss: 5.166 (Base: 4.344, Orth: 0.457, Struct: 0.365), Acc: 36.328%, Lr: 4.55e-04
+2026-07-07 18:32:55 transreid.train INFO: Epoch[30] done. Loss: 5.311 (Base: 4.507, Orth: 0.437, Struct: 0.367), Acc: 36.328%, Lr: 4.52e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:32:57 transreid.train INFO: Validation Results - Epoch: 30
+2026-07-07 18:32:57 transreid.train INFO: mAP: 63.8%
+2026-07-07 18:32:57 transreid.train INFO: CMC curve, Rank-1  : 83.6%
+2026-07-07 18:32:57 transreid.train INFO: CMC curve, Rank-5  : 92.6%
+2026-07-07 18:32:57 transreid.train INFO: CMC curve, Rank-10 : 93.4%
+2026-07-07 18:32:57 transreid.train INFO: Update Best mAP: 63.8% at Epoch 30
+2026-07-07 18:32:57 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:32:58 transreid.train INFO: Epoch[31] done. Loss: 5.185 (Base: 4.375, Orth: 0.448, Struct: 0.362), Acc: 36.719%, Lr: 4.49e-04
+2026-07-07 18:32:59 transreid.train INFO: Epoch[32] done. Loss: 5.347 (Base: 4.530, Orth: 0.458, Struct: 0.358), Acc: 35.547%, Lr: 4.46e-04
+2026-07-07 18:33:00 transreid.train INFO: Epoch[33] done. Loss: 5.220 (Base: 4.449, Orth: 0.417, Struct: 0.354), Acc: 39.453%, Lr: 4.43e-04
+2026-07-07 18:33:01 transreid.train INFO: Epoch[34] done. Loss: 5.239 (Base: 4.463, Orth: 0.423, Struct: 0.352), Acc: 41.797%, Lr: 4.39e-04
+2026-07-07 18:33:02 transreid.train INFO: Epoch[35] done. Loss: 5.121 (Base: 4.355, Orth: 0.412, Struct: 0.354), Acc: 35.938%, Lr: 4.36e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:33:04 transreid.train INFO: Validation Results - Epoch: 35
+2026-07-07 18:33:04 transreid.train INFO: mAP: 64.2%
+2026-07-07 18:33:04 transreid.train INFO: CMC curve, Rank-1  : 82.8%
+2026-07-07 18:33:04 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:33:04 transreid.train INFO: CMC curve, Rank-10 : 93.4%
+2026-07-07 18:33:05 transreid.train INFO: Update Best mAP: 64.2% at Epoch 35
+2026-07-07 18:33:05 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:33:06 transreid.train INFO: Epoch[36] done. Loss: 5.150 (Base: 4.399, Orth: 0.399, Struct: 0.352), Acc: 35.938%, Lr: 4.32e-04
+2026-07-07 18:33:07 transreid.train INFO: Epoch[37] done. Loss: 5.126 (Base: 4.360, Orth: 0.405, Struct: 0.361), Acc: 36.328%, Lr: 4.29e-04
+2026-07-07 18:33:08 transreid.train INFO: Epoch[38] done. Loss: 5.034 (Base: 4.315, Orth: 0.374, Struct: 0.345), Acc: 37.891%, Lr: 4.25e-04
+2026-07-07 18:33:09 transreid.train INFO: Epoch[39] done. Loss: 5.090 (Base: 4.316, Orth: 0.417, Struct: 0.357), Acc: 41.797%, Lr: 4.21e-04
+2026-07-07 18:33:10 transreid.train INFO: Epoch[40] done. Loss: 4.821 (Base: 4.016, Orth: 0.443, Struct: 0.362), Acc: 41.797%, Lr: 4.17e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:33:12 transreid.train INFO: Validation Results - Epoch: 40
+2026-07-07 18:33:12 transreid.train INFO: mAP: 64.5%
+2026-07-07 18:33:12 transreid.train INFO: CMC curve, Rank-1  : 83.6%
+2026-07-07 18:33:12 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:33:12 transreid.train INFO: CMC curve, Rank-10 : 93.4%
+2026-07-07 18:33:13 transreid.train INFO: Update Best mAP: 64.5% at Epoch 40
+2026-07-07 18:33:13 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:33:14 transreid.train INFO: Epoch[41] done. Loss: 4.844 (Base: 4.108, Orth: 0.390, Struct: 0.346), Acc: 43.750%, Lr: 4.14e-04
+2026-07-07 18:33:15 transreid.train INFO: Epoch[42] done. Loss: 4.843 (Base: 4.072, Orth: 0.416, Struct: 0.355), Acc: 41.016%, Lr: 4.10e-04
+2026-07-07 18:33:16 transreid.train INFO: Epoch[43] done. Loss: 4.723 (Base: 3.957, Orth: 0.411, Struct: 0.355), Acc: 45.703%, Lr: 4.05e-04
+2026-07-07 18:33:17 transreid.train INFO: Epoch[44] done. Loss: 4.711 (Base: 3.949, Orth: 0.416, Struct: 0.346), Acc: 45.703%, Lr: 4.01e-04
+2026-07-07 18:33:18 transreid.train INFO: Epoch[45] done. Loss: 4.738 (Base: 4.002, Orth: 0.383, Struct: 0.353), Acc: 44.141%, Lr: 3.97e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:33:20 transreid.train INFO: Validation Results - Epoch: 45
+2026-07-07 18:33:20 transreid.train INFO: mAP: 64.7%
+2026-07-07 18:33:20 transreid.train INFO: CMC curve, Rank-1  : 83.6%
+2026-07-07 18:33:20 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:33:20 transreid.train INFO: CMC curve, Rank-10 : 93.4%
+2026-07-07 18:33:20 transreid.train INFO: Update Best mAP: 64.7% at Epoch 45
+2026-07-07 18:33:20 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:33:22 transreid.train INFO: Epoch[46] done. Loss: 4.559 (Base: 3.856, Orth: 0.361, Struct: 0.342), Acc: 45.703%, Lr: 3.93e-04
+2026-07-07 18:33:23 transreid.train INFO: Epoch[47] done. Loss: 4.682 (Base: 3.962, Orth: 0.392, Struct: 0.328), Acc: 47.266%, Lr: 3.89e-04
+2026-07-07 18:33:24 transreid.train INFO: Epoch[48] done. Loss: 4.645 (Base: 3.904, Orth: 0.405, Struct: 0.336), Acc: 46.484%, Lr: 3.84e-04
+2026-07-07 18:33:25 transreid.train INFO: Epoch[49] done. Loss: 4.591 (Base: 3.849, Orth: 0.397, Struct: 0.346), Acc: 47.656%, Lr: 3.80e-04
+2026-07-07 18:33:26 transreid.train INFO: Epoch[50] done. Loss: 4.715 (Base: 3.961, Orth: 0.405, Struct: 0.348), Acc: 47.656%, Lr: 3.75e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:33:28 transreid.train INFO: Validation Results - Epoch: 50
+2026-07-07 18:33:28 transreid.train INFO: mAP: 64.7%
+2026-07-07 18:33:28 transreid.train INFO: CMC curve, Rank-1  : 83.6%
+2026-07-07 18:33:28 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:33:28 transreid.train INFO: CMC curve, Rank-10 : 94.3%
+2026-07-07 18:33:29 transreid.train INFO: Epoch[51] done. Loss: 4.613 (Base: 3.906, Orth: 0.365, Struct: 0.342), Acc: 47.656%, Lr: 3.71e-04
+2026-07-07 18:33:30 transreid.train INFO: Epoch[52] done. Loss: 4.620 (Base: 3.923, Orth: 0.358, Struct: 0.340), Acc: 46.875%, Lr: 3.66e-04
+2026-07-07 18:33:31 transreid.train INFO: Epoch[53] done. Loss: 4.543 (Base: 3.817, Orth: 0.376, Struct: 0.350), Acc: 49.609%, Lr: 3.61e-04
+2026-07-07 18:33:32 transreid.train INFO: Epoch[54] done. Loss: 4.503 (Base: 3.810, Orth: 0.350, Struct: 0.344), Acc: 48.828%, Lr: 3.57e-04
+2026-07-07 18:33:33 transreid.train INFO: Epoch[55] done. Loss: 4.521 (Base: 3.829, Orth: 0.348, Struct: 0.345), Acc: 51.562%, Lr: 3.52e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:33:35 transreid.train INFO: Validation Results - Epoch: 55
+2026-07-07 18:33:35 transreid.train INFO: mAP: 65.2%
+2026-07-07 18:33:35 transreid.train INFO: CMC curve, Rank-1  : 84.4%
+2026-07-07 18:33:35 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:33:35 transreid.train INFO: CMC curve, Rank-10 : 95.1%
+2026-07-07 18:33:36 transreid.train INFO: Update Best mAP: 65.2% at Epoch 55
+2026-07-07 18:33:36 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:33:37 transreid.train INFO: Epoch[56] done. Loss: 4.674 (Base: 3.990, Orth: 0.343, Struct: 0.340), Acc: 42.969%, Lr: 3.47e-04
+2026-07-07 18:33:38 transreid.train INFO: Epoch[57] done. Loss: 4.531 (Base: 3.848, Orth: 0.348, Struct: 0.334), Acc: 48.047%, Lr: 3.42e-04
+2026-07-07 18:33:39 transreid.train INFO: Epoch[58] done. Loss: 4.394 (Base: 3.701, Orth: 0.361, Struct: 0.332), Acc: 48.438%, Lr: 3.37e-04
+2026-07-07 18:33:40 transreid.train INFO: Epoch[59] done. Loss: 4.549 (Base: 3.854, Orth: 0.357, Struct: 0.338), Acc: 46.875%, Lr: 3.33e-04
+2026-07-07 18:33:41 transreid.train INFO: Epoch[60] done. Loss: 4.399 (Base: 3.723, Orth: 0.347, Struct: 0.329), Acc: 46.875%, Lr: 3.28e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:33:43 transreid.train INFO: Validation Results - Epoch: 60
+2026-07-07 18:33:43 transreid.train INFO: mAP: 65.4%
+2026-07-07 18:33:43 transreid.train INFO: CMC curve, Rank-1  : 84.4%
+2026-07-07 18:33:43 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:33:43 transreid.train INFO: CMC curve, Rank-10 : 95.1%
+2026-07-07 18:33:44 transreid.train INFO: Update Best mAP: 65.4% at Epoch 60
+2026-07-07 18:33:44 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:33:45 transreid.train INFO: Epoch[61] done. Loss: 4.339 (Base: 3.649, Orth: 0.348, Struct: 0.342), Acc: 50.000%, Lr: 3.23e-04
+2026-07-07 18:33:46 transreid.train INFO: Epoch[62] done. Loss: 4.372 (Base: 3.676, Orth: 0.352, Struct: 0.344), Acc: 46.094%, Lr: 3.18e-04
+2026-07-07 18:33:47 transreid.train INFO: Epoch[63] done. Loss: 4.438 (Base: 3.757, Orth: 0.343, Struct: 0.337), Acc: 50.391%, Lr: 3.13e-04
+2026-07-07 18:33:48 transreid.train INFO: Epoch[64] done. Loss: 4.460 (Base: 3.791, Orth: 0.340, Struct: 0.330), Acc: 51.562%, Lr: 3.07e-04
+2026-07-07 18:33:49 transreid.train INFO: Epoch[65] done. Loss: 4.451 (Base: 3.760, Orth: 0.347, Struct: 0.343), Acc: 50.391%, Lr: 3.02e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:33:51 transreid.train INFO: Validation Results - Epoch: 65
+2026-07-07 18:33:51 transreid.train INFO: mAP: 65.2%
+2026-07-07 18:33:51 transreid.train INFO: CMC curve, Rank-1  : 83.6%
+2026-07-07 18:33:51 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:33:51 transreid.train INFO: CMC curve, Rank-10 : 95.1%
+2026-07-07 18:33:52 transreid.train INFO: Epoch[66] done. Loss: 4.338 (Base: 3.695, Orth: 0.308, Struct: 0.335), Acc: 52.734%, Lr: 2.97e-04
+2026-07-07 18:33:53 transreid.train INFO: Epoch[67] done. Loss: 4.520 (Base: 3.862, Orth: 0.330, Struct: 0.328), Acc: 46.875%, Lr: 2.92e-04
+2026-07-07 18:33:54 transreid.train INFO: Epoch[68] done. Loss: 4.234 (Base: 3.583, Orth: 0.323, Struct: 0.328), Acc: 55.469%, Lr: 2.87e-04
+2026-07-07 18:33:55 transreid.train INFO: Epoch[69] done. Loss: 4.347 (Base: 3.690, Orth: 0.325, Struct: 0.332), Acc: 51.953%, Lr: 2.82e-04
+2026-07-07 18:33:56 transreid.train INFO: Epoch[70] done. Loss: 4.374 (Base: 3.734, Orth: 0.313, Struct: 0.327), Acc: 48.438%, Lr: 2.77e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:33:58 transreid.train INFO: Validation Results - Epoch: 70
+2026-07-07 18:33:58 transreid.train INFO: mAP: 65.1%
+2026-07-07 18:33:58 transreid.train INFO: CMC curve, Rank-1  : 83.6%
+2026-07-07 18:33:58 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:33:58 transreid.train INFO: CMC curve, Rank-10 : 95.1%
+2026-07-07 18:33:59 transreid.train INFO: Epoch[71] done. Loss: 4.365 (Base: 3.711, Orth: 0.317, Struct: 0.337), Acc: 44.531%, Lr: 2.71e-04
+2026-07-07 18:34:00 transreid.train INFO: Epoch[72] done. Loss: 4.571 (Base: 3.882, Orth: 0.351, Struct: 0.338), Acc: 45.703%, Lr: 2.66e-04
+2026-07-07 18:34:01 transreid.train INFO: Epoch[73] done. Loss: 4.282 (Base: 3.631, Orth: 0.321, Struct: 0.331), Acc: 45.312%, Lr: 2.61e-04
+2026-07-07 18:34:02 transreid.train INFO: Epoch[74] done. Loss: 4.361 (Base: 3.669, Orth: 0.355, Struct: 0.337), Acc: 50.391%, Lr: 2.56e-04
+2026-07-07 18:34:03 transreid.train INFO: Epoch[75] done. Loss: 4.342 (Base: 3.650, Orth: 0.348, Struct: 0.343), Acc: 50.391%, Lr: 2.51e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:34:05 transreid.train INFO: Validation Results - Epoch: 75
+2026-07-07 18:34:05 transreid.train INFO: mAP: 66.3%
+2026-07-07 18:34:05 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:34:05 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:34:05 transreid.train INFO: CMC curve, Rank-10 : 95.1%
+2026-07-07 18:34:06 transreid.train INFO: Update Best mAP: 66.3% at Epoch 75
+2026-07-07 18:34:06 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:34:07 transreid.train INFO: Epoch[76] done. Loss: 4.418 (Base: 3.751, Orth: 0.328, Struct: 0.338), Acc: 48.438%, Lr: 2.45e-04
+2026-07-07 18:34:08 transreid.train INFO: Epoch[77] done. Loss: 4.253 (Base: 3.610, Orth: 0.319, Struct: 0.324), Acc: 51.953%, Lr: 2.40e-04
+2026-07-07 18:34:09 transreid.train INFO: Epoch[78] done. Loss: 4.302 (Base: 3.650, Orth: 0.322, Struct: 0.330), Acc: 49.219%, Lr: 2.35e-04
+2026-07-07 18:34:10 transreid.train INFO: Epoch[79] done. Loss: 4.394 (Base: 3.735, Orth: 0.324, Struct: 0.335), Acc: 49.219%, Lr: 2.30e-04
+2026-07-07 18:34:11 transreid.train INFO: Epoch[80] done. Loss: 4.066 (Base: 3.406, Orth: 0.336, Struct: 0.324), Acc: 53.906%, Lr: 2.24e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:34:13 transreid.train INFO: Validation Results - Epoch: 80
+2026-07-07 18:34:13 transreid.train INFO: mAP: 66.0%
+2026-07-07 18:34:13 transreid.train INFO: CMC curve, Rank-1  : 84.4%
+2026-07-07 18:34:13 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:34:13 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:34:15 transreid.train INFO: Epoch[81] done. Loss: 4.359 (Base: 3.691, Orth: 0.346, Struct: 0.322), Acc: 49.609%, Lr: 2.19e-04
+2026-07-07 18:34:16 transreid.train INFO: Epoch[82] done. Loss: 4.358 (Base: 3.705, Orth: 0.328, Struct: 0.326), Acc: 49.219%, Lr: 2.14e-04
+2026-07-07 18:34:17 transreid.train INFO: Epoch[83] done. Loss: 4.257 (Base: 3.572, Orth: 0.339, Struct: 0.345), Acc: 45.703%, Lr: 2.09e-04
+2026-07-07 18:34:18 transreid.train INFO: Epoch[84] done. Loss: 4.408 (Base: 3.711, Orth: 0.358, Struct: 0.339), Acc: 47.656%, Lr: 2.04e-04
+2026-07-07 18:34:19 transreid.train INFO: Epoch[85] done. Loss: 4.249 (Base: 3.628, Orth: 0.301, Struct: 0.320), Acc: 45.312%, Lr: 1.99e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:34:21 transreid.train INFO: Validation Results - Epoch: 85
+2026-07-07 18:34:21 transreid.train INFO: mAP: 66.5%
+2026-07-07 18:34:21 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:34:21 transreid.train INFO: CMC curve, Rank-5  : 95.1%
+2026-07-07 18:34:21 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:34:21 transreid.train INFO: Update Best mAP: 66.5% at Epoch 85
+2026-07-07 18:34:21 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:34:22 transreid.train INFO: Epoch[86] done. Loss: 4.194 (Base: 3.537, Orth: 0.322, Struct: 0.335), Acc: 45.312%, Lr: 1.94e-04
+2026-07-07 18:34:23 transreid.train INFO: Epoch[87] done. Loss: 4.221 (Base: 3.591, Orth: 0.309, Struct: 0.321), Acc: 50.391%, Lr: 1.88e-04
+2026-07-07 18:34:24 transreid.train INFO: Epoch[88] done. Loss: 4.263 (Base: 3.619, Orth: 0.315, Struct: 0.329), Acc: 49.219%, Lr: 1.83e-04
+2026-07-07 18:34:25 transreid.train INFO: Epoch[89] done. Loss: 4.080 (Base: 3.463, Orth: 0.295, Struct: 0.322), Acc: 46.875%, Lr: 1.78e-04
+2026-07-07 18:34:26 transreid.train INFO: Epoch[90] done. Loss: 4.215 (Base: 3.558, Orth: 0.324, Struct: 0.333), Acc: 45.312%, Lr: 1.73e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:34:29 transreid.train INFO: Validation Results - Epoch: 90
+2026-07-07 18:34:29 transreid.train INFO: mAP: 66.1%
+2026-07-07 18:34:29 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:34:29 transreid.train INFO: CMC curve, Rank-5  : 93.4%
+2026-07-07 18:34:29 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:34:30 transreid.train INFO: Epoch[91] done. Loss: 4.337 (Base: 3.695, Orth: 0.310, Struct: 0.333), Acc: 45.703%, Lr: 1.68e-04
+2026-07-07 18:34:31 transreid.train INFO: Epoch[92] done. Loss: 4.285 (Base: 3.644, Orth: 0.316, Struct: 0.326), Acc: 43.359%, Lr: 1.64e-04
+2026-07-07 18:34:32 transreid.train INFO: Epoch[93] done. Loss: 4.340 (Base: 3.715, Orth: 0.300, Struct: 0.326), Acc: 48.047%, Lr: 1.59e-04
+2026-07-07 18:34:33 transreid.train INFO: Epoch[94] done. Loss: 4.180 (Base: 3.559, Orth: 0.297, Struct: 0.324), Acc: 50.781%, Lr: 1.54e-04
+2026-07-07 18:34:34 transreid.train INFO: Epoch[95] done. Loss: 4.190 (Base: 3.584, Orth: 0.289, Struct: 0.317), Acc: 49.609%, Lr: 1.49e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:34:36 transreid.train INFO: Validation Results - Epoch: 95
+2026-07-07 18:34:36 transreid.train INFO: mAP: 66.5%
+2026-07-07 18:34:36 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:34:36 transreid.train INFO: CMC curve, Rank-5  : 94.3%
+2026-07-07 18:34:36 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:34:36 transreid.train INFO: Update Best mAP: 66.5% at Epoch 95
+2026-07-07 18:34:36 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:34:37 transreid.train INFO: Epoch[96] done. Loss: 4.260 (Base: 3.633, Orth: 0.297, Struct: 0.331), Acc: 42.578%, Lr: 1.44e-04
+2026-07-07 18:34:38 transreid.train INFO: Epoch[97] done. Loss: 4.147 (Base: 3.508, Orth: 0.318, Struct: 0.321), Acc: 53.516%, Lr: 1.40e-04
+2026-07-07 18:34:39 transreid.train INFO: Epoch[98] done. Loss: 4.186 (Base: 3.546, Orth: 0.319, Struct: 0.321), Acc: 46.094%, Lr: 1.35e-04
+2026-07-07 18:34:40 transreid.train INFO: Epoch[99] done. Loss: 4.225 (Base: 3.575, Orth: 0.327, Struct: 0.324), Acc: 48.828%, Lr: 1.30e-04
+2026-07-07 18:34:41 transreid.train INFO: Epoch[100] done. Loss: 4.227 (Base: 3.574, Orth: 0.330, Struct: 0.323), Acc: 45.703%, Lr: 1.26e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:34:44 transreid.train INFO: Validation Results - Epoch: 100
+2026-07-07 18:34:44 transreid.train INFO: mAP: 66.9%
+2026-07-07 18:34:44 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:34:44 transreid.train INFO: CMC curve, Rank-5  : 95.1%
+2026-07-07 18:34:44 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:34:44 transreid.train INFO: Update Best mAP: 66.9% at Epoch 100
+2026-07-07 18:34:44 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:34:46 transreid.train INFO: Epoch[101] done. Loss: 4.139 (Base: 3.525, Orth: 0.297, Struct: 0.318), Acc: 52.344%, Lr: 1.21e-04
+2026-07-07 18:34:47 transreid.train INFO: Epoch[102] done. Loss: 4.127 (Base: 3.481, Orth: 0.317, Struct: 0.328), Acc: 50.781%, Lr: 1.17e-04
+2026-07-07 18:34:48 transreid.train INFO: Epoch[103] done. Loss: 4.114 (Base: 3.487, Orth: 0.306, Struct: 0.321), Acc: 47.266%, Lr: 1.12e-04
+2026-07-07 18:34:49 transreid.train INFO: Epoch[104] done. Loss: 4.166 (Base: 3.558, Orth: 0.290, Struct: 0.318), Acc: 47.266%, Lr: 1.08e-04
+2026-07-07 18:34:50 transreid.train INFO: Epoch[105] done. Loss: 4.297 (Base: 3.653, Orth: 0.307, Struct: 0.336), Acc: 46.875%, Lr: 1.04e-04
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:34:52 transreid.train INFO: Validation Results - Epoch: 105
+2026-07-07 18:34:52 transreid.train INFO: mAP: 67.1%
+2026-07-07 18:34:52 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:34:52 transreid.train INFO: CMC curve, Rank-5  : 95.1%
+2026-07-07 18:34:52 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:34:52 transreid.train INFO: Update Best mAP: 67.1% at Epoch 105
+2026-07-07 18:34:52 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:34:53 transreid.train INFO: Epoch[106] done. Loss: 4.142 (Base: 3.497, Orth: 0.319, Struct: 0.326), Acc: 48.828%, Lr: 9.97e-05
+2026-07-07 18:34:54 transreid.train INFO: Epoch[107] done. Loss: 4.251 (Base: 3.606, Orth: 0.321, Struct: 0.325), Acc: 44.141%, Lr: 9.55e-05
+2026-07-07 18:34:55 transreid.train INFO: Epoch[108] done. Loss: 4.255 (Base: 3.625, Orth: 0.305, Struct: 0.325), Acc: 43.750%, Lr: 9.15e-05
+2026-07-07 18:34:56 transreid.train INFO: Epoch[109] done. Loss: 4.071 (Base: 3.446, Orth: 0.304, Struct: 0.320), Acc: 50.781%, Lr: 8.75e-05
+2026-07-07 18:34:57 transreid.train INFO: Epoch[110] done. Loss: 4.056 (Base: 3.458, Orth: 0.282, Struct: 0.317), Acc: 50.000%, Lr: 8.36e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:35:00 transreid.train INFO: Validation Results - Epoch: 110
+2026-07-07 18:35:00 transreid.train INFO: mAP: 67.1%
+2026-07-07 18:35:00 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:35:00 transreid.train INFO: CMC curve, Rank-5  : 95.1%
+2026-07-07 18:35:00 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:35:01 transreid.train INFO: Epoch[111] done. Loss: 4.104 (Base: 3.446, Orth: 0.326, Struct: 0.331), Acc: 47.656%, Lr: 7.97e-05
+2026-07-07 18:35:02 transreid.train INFO: Epoch[112] done. Loss: 4.196 (Base: 3.543, Orth: 0.319, Struct: 0.334), Acc: 47.266%, Lr: 7.59e-05
+2026-07-07 18:35:03 transreid.train INFO: Epoch[113] done. Loss: 3.992 (Base: 3.389, Orth: 0.294, Struct: 0.308), Acc: 48.438%, Lr: 7.22e-05
+2026-07-07 18:35:04 transreid.train INFO: Epoch[114] done. Loss: 4.158 (Base: 3.531, Orth: 0.302, Struct: 0.324), Acc: 47.266%, Lr: 6.86e-05
+2026-07-07 18:35:05 transreid.train INFO: Epoch[115] done. Loss: 4.149 (Base: 3.478, Orth: 0.356, Struct: 0.315), Acc: 49.609%, Lr: 6.51e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:35:07 transreid.train INFO: Validation Results - Epoch: 115
+2026-07-07 18:35:07 transreid.train INFO: mAP: 67.1%
+2026-07-07 18:35:07 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:35:07 transreid.train INFO: CMC curve, Rank-5  : 95.1%
+2026-07-07 18:35:07 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:35:08 transreid.train INFO: Epoch[116] done. Loss: 4.213 (Base: 3.602, Orth: 0.282, Struct: 0.328), Acc: 45.703%, Lr: 6.16e-05
+2026-07-07 18:35:09 transreid.train INFO: Epoch[117] done. Loss: 4.136 (Base: 3.499, Orth: 0.310, Struct: 0.327), Acc: 50.391%, Lr: 5.83e-05
+2026-07-07 18:35:10 transreid.train INFO: Epoch[118] done. Loss: 4.023 (Base: 3.408, Orth: 0.307, Struct: 0.308), Acc: 48.438%, Lr: 5.50e-05
+2026-07-07 18:35:11 transreid.train INFO: Epoch[119] done. Loss: 4.125 (Base: 3.507, Orth: 0.303, Struct: 0.315), Acc: 46.094%, Lr: 5.18e-05
+2026-07-07 18:35:12 transreid.train INFO: Epoch[120] done. Loss: 4.206 (Base: 3.573, Orth: 0.312, Struct: 0.321), Acc: 46.094%, Lr: 4.87e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:35:14 transreid.train INFO: Validation Results - Epoch: 120
+2026-07-07 18:35:14 transreid.train INFO: mAP: 67.4%
+2026-07-07 18:35:14 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:35:14 transreid.train INFO: CMC curve, Rank-5  : 94.3%
+2026-07-07 18:35:14 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:35:15 transreid.train INFO: Update Best mAP: 67.4% at Epoch 120
+2026-07-07 18:35:15 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:35:16 transreid.train INFO: Epoch[121] done. Loss: 4.121 (Base: 3.523, Orth: 0.280, Struct: 0.317), Acc: 48.047%, Lr: 4.56e-05
+2026-07-07 18:35:17 transreid.train INFO: Epoch[122] done. Loss: 4.184 (Base: 3.527, Orth: 0.323, Struct: 0.333), Acc: 44.922%, Lr: 4.27e-05
+2026-07-07 18:35:18 transreid.train INFO: Epoch[123] done. Loss: 4.158 (Base: 3.505, Orth: 0.324, Struct: 0.329), Acc: 50.391%, Lr: 3.98e-05
+2026-07-07 18:35:19 transreid.train INFO: Epoch[124] done. Loss: 4.191 (Base: 3.568, Orth: 0.298, Struct: 0.325), Acc: 47.266%, Lr: 3.71e-05
+2026-07-07 18:35:20 transreid.train INFO: Epoch[125] done. Loss: 4.089 (Base: 3.451, Orth: 0.316, Struct: 0.321), Acc: 51.562%, Lr: 3.44e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:35:22 transreid.train INFO: Validation Results - Epoch: 125
+2026-07-07 18:35:22 transreid.train INFO: mAP: 67.4%
+2026-07-07 18:35:22 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:35:22 transreid.train INFO: CMC curve, Rank-5  : 94.3%
+2026-07-07 18:35:22 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:35:22 transreid.train INFO: Update Best mAP: 67.4% at Epoch 125
+2026-07-07 18:35:22 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:35:23 transreid.train INFO: Epoch[126] done. Loss: 4.074 (Base: 3.451, Orth: 0.301, Struct: 0.323), Acc: 48.047%, Lr: 3.19e-05
+2026-07-07 18:35:24 transreid.train INFO: Epoch[127] done. Loss: 4.143 (Base: 3.507, Orth: 0.311, Struct: 0.324), Acc: 50.000%, Lr: 2.94e-05
+2026-07-07 18:35:25 transreid.train INFO: Epoch[128] done. Loss: 4.201 (Base: 3.568, Orth: 0.303, Struct: 0.330), Acc: 44.922%, Lr: 2.70e-05
+2026-07-07 18:35:26 transreid.train INFO: Epoch[129] done. Loss: 4.089 (Base: 3.463, Orth: 0.294, Struct: 0.332), Acc: 49.219%, Lr: 2.47e-05
+2026-07-07 18:35:27 transreid.train INFO: Epoch[130] done. Loss: 4.158 (Base: 3.508, Orth: 0.321, Struct: 0.330), Acc: 51.172%, Lr: 2.26e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:35:30 transreid.train INFO: Validation Results - Epoch: 130
+2026-07-07 18:35:30 transreid.train INFO: mAP: 67.4%
+2026-07-07 18:35:30 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:35:30 transreid.train INFO: CMC curve, Rank-5  : 95.1%
+2026-07-07 18:35:30 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:35:31 transreid.train INFO: Epoch[131] done. Loss: 4.100 (Base: 3.469, Orth: 0.315, Struct: 0.316), Acc: 46.875%, Lr: 2.05e-05
+2026-07-07 18:35:32 transreid.train INFO: Epoch[132] done. Loss: 4.177 (Base: 3.538, Orth: 0.319, Struct: 0.320), Acc: 44.922%, Lr: 1.85e-05
+2026-07-07 18:35:33 transreid.train INFO: Epoch[133] done. Loss: 4.114 (Base: 3.498, Orth: 0.285, Struct: 0.331), Acc: 48.047%, Lr: 1.66e-05
+2026-07-07 18:35:34 transreid.train INFO: Epoch[134] done. Loss: 4.013 (Base: 3.403, Orth: 0.294, Struct: 0.315), Acc: 52.734%, Lr: 1.49e-05
+2026-07-07 18:35:35 transreid.train INFO: Epoch[135] done. Loss: 4.054 (Base: 3.448, Orth: 0.282, Struct: 0.325), Acc: 47.656%, Lr: 1.32e-05
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:35:37 transreid.train INFO: Validation Results - Epoch: 135
+2026-07-07 18:35:37 transreid.train INFO: mAP: 67.4%
+2026-07-07 18:35:37 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:35:37 transreid.train INFO: CMC curve, Rank-5  : 95.1%
+2026-07-07 18:35:37 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:35:38 transreid.train INFO: Epoch[136] done. Loss: 4.129 (Base: 3.508, Orth: 0.294, Struct: 0.327), Acc: 48.047%, Lr: 1.16e-05
+2026-07-07 18:35:39 transreid.train INFO: Epoch[137] done. Loss: 4.061 (Base: 3.473, Orth: 0.274, Struct: 0.314), Acc: 53.516%, Lr: 1.02e-05
+2026-07-07 18:35:40 transreid.train INFO: Epoch[138] done. Loss: 4.077 (Base: 3.445, Orth: 0.305, Struct: 0.328), Acc: 48.828%, Lr: 8.84e-06
+2026-07-07 18:35:41 transreid.train INFO: Epoch[139] done. Loss: 4.097 (Base: 3.463, Orth: 0.313, Struct: 0.321), Acc: 52.734%, Lr: 7.59e-06
+2026-07-07 18:35:42 transreid.train INFO: Epoch[140] done. Loss: 4.123 (Base: 3.470, Orth: 0.325, Struct: 0.328), Acc: 49.219%, Lr: 6.45e-06
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:35:45 transreid.train INFO: Validation Results - Epoch: 140
+2026-07-07 18:35:45 transreid.train INFO: mAP: 67.5%
+2026-07-07 18:35:45 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:35:45 transreid.train INFO: CMC curve, Rank-5  : 94.3%
+2026-07-07 18:35:45 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:35:45 transreid.train INFO: Update Best mAP: 67.5% at Epoch 140
+2026-07-07 18:35:45 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:35:46 transreid.train INFO: Epoch[141] done. Loss: 3.942 (Base: 3.317, Orth: 0.302, Struct: 0.323), Acc: 46.875%, Lr: 5.42e-06
+2026-07-07 18:35:47 transreid.train INFO: Epoch[142] done. Loss: 4.018 (Base: 3.384, Orth: 0.310, Struct: 0.323), Acc: 49.219%, Lr: 4.49e-06
+2026-07-07 18:35:48 transreid.train INFO: Epoch[143] done. Loss: 4.050 (Base: 3.432, Orth: 0.296, Struct: 0.321), Acc: 48.438%, Lr: 3.68e-06
+2026-07-07 18:35:49 transreid.train INFO: Epoch[144] done. Loss: 4.053 (Base: 3.457, Orth: 0.286, Struct: 0.310), Acc: 50.000%, Lr: 2.97e-06
+2026-07-07 18:35:50 transreid.train INFO: Epoch[145] done. Loss: 4.221 (Base: 3.609, Orth: 0.290, Struct: 0.323), Acc: 50.000%, Lr: 2.37e-06
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:35:52 transreid.train INFO: Validation Results - Epoch: 145
+2026-07-07 18:35:52 transreid.train INFO: mAP: 67.5%
+2026-07-07 18:35:52 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:35:52 transreid.train INFO: CMC curve, Rank-5  : 94.3%
+2026-07-07 18:35:52 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:35:53 transreid.train INFO: Update Best mAP: 67.5% at Epoch 145
+2026-07-07 18:35:53 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:35:54 transreid.train INFO: Epoch[146] done. Loss: 4.038 (Base: 3.425, Orth: 0.305, Struct: 0.307), Acc: 50.000%, Lr: 1.88e-06
+2026-07-07 18:35:55 transreid.train INFO: Epoch[147] done. Loss: 4.147 (Base: 3.502, Orth: 0.324, Struct: 0.321), Acc: 48.047%, Lr: 1.49e-06
+2026-07-07 18:35:56 transreid.train INFO: Epoch[148] done. Loss: 4.085 (Base: 3.455, Orth: 0.297, Struct: 0.333), Acc: 47.656%, Lr: 1.22e-06
+2026-07-07 18:35:57 transreid.train INFO: Epoch[149] done. Loss: 4.149 (Base: 3.512, Orth: 0.316, Struct: 0.320), Acc: 45.703%, Lr: 1.05e-06
+2026-07-07 18:35:58 transreid.train INFO: Epoch[150] done. Loss: 4.127 (Base: 3.495, Orth: 0.309, Struct: 0.324), Acc: 53.125%, Lr: 1.00e-06
+The test feature is normalized
+=> Computing DistMat with euclidean_distance
+2026-07-07 18:36:00 transreid.train INFO: Validation Results - Epoch: 150
+2026-07-07 18:36:00 transreid.train INFO: mAP: 67.5%
+2026-07-07 18:36:00 transreid.train INFO: CMC curve, Rank-1  : 85.2%
+2026-07-07 18:36:00 transreid.train INFO: CMC curve, Rank-5  : 94.3%
+2026-07-07 18:36:00 transreid.train INFO: CMC curve, Rank-10 : 95.9%
+2026-07-07 18:36:01 transreid.train INFO: Update Best mAP: 67.5% at Epoch 150
+2026-07-07 18:36:01 transreid.train INFO: Save Best Weights to: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:36:01 transreid.train INFO: ==================================================
+2026-07-07 18:36:01 transreid.train INFO: Training Finished! Best Validation Metrics:
+2026-07-07 18:36:01 transreid.train INFO: Best mAP: 67.5% (at Epoch 150)
+2026-07-07 18:36:01 transreid.train INFO: Corresponding Rank-1: 85.2%
+2026-07-07 18:36:01 transreid.train INFO: Corresponding Rank-5: 94.3%
+2026-07-07 18:36:01 transreid.train INFO: Corresponding Rank-10: 95.9%
+2026-07-07 18:36:01 transreid.train INFO: Best Weights Saved at: ./logs/SDF-Net_Multi/best.pth
+2026-07-07 18:36:01 transreid.train INFO: ==================================================
