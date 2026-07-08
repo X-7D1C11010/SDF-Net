@@ -1,0 +1,221 @@
+nohup: ignoring input
+2026-06-05 18:11:35 transreid INFO: Saving model in the path :./logs/pretrain_transoss
+2026-06-05 18:11:35 transreid INFO: Namespace(config_file='configs/pretrain_transoss.yml', opts=[], local_rank=0)
+2026-06-05 18:11:35 transreid INFO: Loaded configuration file configs/pretrain_transoss.yml
+2026-06-05 18:11:35 transreid INFO: 
+MODEL:
+  PRETRAIN_CHOICE: 'imagenet'
+  PRETRAIN_PATH: "/ssd_data/lixiang_data/SDF-Net/model/vit_base_p16_224.pth"
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  TRANSFORMER_TYPE: 'vit_base_patch16_224_TransOSS'
+  STRIDE_SIZE: [16, 16]
+  MIE: True
+  MIE_COE: 3.0
+  SSE: False
+  PAIR: True
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+  PROB: 0.5 # random horizontal flip
+  RE_PROB: 0.5 # random erasing
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+
+DATASETS:
+  NAMES: ('Pretrain')
+  ROOT_DIR: ('/ssd_data/lixiang_data/SDF-Net/data/HOSS-ReID')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 4
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 60
+  BASE_LR: 0.01
+  IMS_PER_BATCH: 256
+  WARMUP_METHOD: 'linear'
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: 5
+  LOG_PERIOD: 100
+  EVAL_PERIOD: 100
+  WEIGHT_DECAY:  1e-4
+  WEIGHT_DECAY_BIAS: 1e-4
+  BIAS_LR_FACTOR: 2
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 256
+  RE_RANKING: False
+  WEIGHT: ''
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: './logs/pretrain_transoss'
+
+2026-06-05 18:11:35 transreid INFO: Running with config:
+DATALOADER:
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 4
+  SAMPLER: softmax_triplet
+DATASETS:
+  NAMES: Pretrain
+  ROOT_DIR: /ssd_data/lixiang_data/SDF-Net/data/HOSS-ReID
+INPUT:
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+  PROB: 0.5
+  RE_PROB: 0.5
+  SIZE_TEST: [256, 128]
+  SIZE_TRAIN: [256, 128]
+MODEL:
+  ABLATION_MODE: sum
+  ATT_DROP_RATE: 0.0
+  COS_LAYER: False
+  DEVICE: cuda
+  DEVICE_ID: 0
+  DISENTANGLE: False
+  DIST_TRAIN: False
+  DROP_OUT: 0.0
+  DROP_PATH: 0.1
+  ID_LOSS_TYPE: softmax
+  ID_LOSS_WEIGHT: 1.0
+  IF_LABELSMOOTH: on
+  IF_WITH_CENTER: no
+  LAST_STRIDE: 1
+  METRIC_LOSS_TYPE: triplet
+  MIE: True
+  MIE_COE: 3.0
+  NAME: transformer
+  NECK: bnneck
+  NO_MARGIN: True
+  ORTH_LOSS_WEIGHT: 0.1
+  PAIR: True
+  PRETRAIN_CHOICE: imagenet
+  PRETRAIN_PATH: /ssd_data/lixiang_data/SDF-Net/model/vit_base_p16_224.pth
+  SSE: False
+  STRIDE_SIZE: [16, 16]
+  STRUCT_LAYER_INDEX: 6
+  STRUCT_LOSS_WEIGHT: 0.5
+  TRANSFORMER_TYPE: vit_base_patch16_224_TransOSS
+  TRIPLET_LOSS_WEIGHT: 1.0
+OUTPUT_DIR: ./logs/pretrain_transoss
+SOLVER:
+  BASE_LR: 0.01
+  BIAS_LR_FACTOR: 2
+  CENTER_LOSS_WEIGHT: 0.0005
+  CENTER_LR: 0.5
+  CHECKPOINT_PERIOD: 5
+  COSINE_MARGIN: 0.5
+  COSINE_SCALE: 30
+  EVAL_PERIOD: 100
+  GAMMA: 0.1
+  IMS_PER_BATCH: 256
+  LARGE_FC_LR: False
+  LOG_PERIOD: 100
+  MARGIN: 0.3
+  MAX_EPOCHS: 60
+  MOMENTUM: 0.9
+  OPTIMIZER_NAME: SGD
+  SEED: 1949
+  STEPS: (40, 70)
+  WARMUP_EPOCHS: 5
+  WARMUP_FACTOR: 0.01
+  WARMUP_METHOD: linear
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+TEST:
+  DIST_MAT: dist_mat.npy
+  EVAL: True
+  FEAT_NORM: yes
+  IMS_PER_BATCH: 256
+  NECK_FEAT: before
+  RE_RANKING: False
+  WEIGHT: 
+=> Pretrain Dataset loaded
+Number of RGB-SAR pair: 55654
+  ----------------------------------------
+Current Ablation Mode: sum
+using Transformer_type: vit_base_patch16_224_TransOSS as a backbone
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using drop_out rate is : 0.0
+using attn_drop_out rate is : 0.0
+using drop_path rate is : 0.1
+Resizing pos_embed: torch.Size([1, 197, 768]) -> torch.Size([1, 129, 768])
+Resized position embedding from size:torch.Size([1, 197, 768]) to size: torch.Size([1, 129, 768]) with height:16 width: 8
+patch_embed_SAR not in the pth
+Loading pretrained model from /ssd_data/lixiang_data/SDF-Net/model/vit_base_p16_224.pth
+===========building transformer===========
+using soft triplet loss for training
+2026-06-05 18:11:38 transreid.train INFO: start training
+/ssd_data/lixiang_data/SDF-Net/processor/processor.py:30: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = amp.GradScaler()
+/ssd_data/lixiang_data/SDF-Net/processor/processor.py:54: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with amp.autocast(enabled=True):
+2026-06-05 18:15:15 transreid.train INFO: Epoch[1] done. Loss: 10.927, Lr: 2.08e-03, Time: 216.64s
+2026-06-05 18:18:52 transreid.train INFO: Epoch[2] done. Loss: 10.903, Lr: 4.06e-03, Time: 217.13s
+2026-06-05 18:22:29 transreid.train INFO: Epoch[3] done. Loss: 10.839, Lr: 6.04e-03, Time: 217.35s
+2026-06-05 18:26:07 transreid.train INFO: Epoch[4] done. Loss: 10.713, Lr: 8.02e-03, Time: 217.62s
+2026-06-05 18:29:45 transreid.train INFO: Epoch[5] done. Loss: 10.508, Lr: 9.83e-03, Time: 217.77s
+2026-06-05 18:33:23 transreid.train INFO: Epoch[6] done. Loss: 10.225, Lr: 9.76e-03, Time: 217.70s
+2026-06-05 18:37:01 transreid.train INFO: Epoch[7] done. Loss: 9.920, Lr: 9.67e-03, Time: 217.78s
+2026-06-05 18:40:39 transreid.train INFO: Epoch[8] done. Loss: 9.599, Lr: 9.57e-03, Time: 217.87s
+2026-06-05 18:44:16 transreid.train INFO: Epoch[9] done. Loss: 9.261, Lr: 9.46e-03, Time: 217.84s
+2026-06-05 18:47:54 transreid.train INFO: Epoch[10] done. Loss: 8.908, Lr: 9.33e-03, Time: 217.84s
+2026-06-05 18:51:32 transreid.train INFO: Epoch[11] done. Loss: 8.535, Lr: 9.19e-03, Time: 217.75s
+2026-06-05 18:55:10 transreid.train INFO: Epoch[12] done. Loss: 8.143, Lr: 9.05e-03, Time: 217.74s
+2026-06-05 18:58:48 transreid.train INFO: Epoch[13] done. Loss: 7.734, Lr: 8.89e-03, Time: 217.51s
+2026-06-05 19:02:25 transreid.train INFO: Epoch[14] done. Loss: 7.310, Lr: 8.72e-03, Time: 217.49s
+2026-06-05 19:06:03 transreid.train INFO: Epoch[15] done. Loss: 6.876, Lr: 8.54e-03, Time: 217.69s
+2026-06-05 19:09:41 transreid.train INFO: Epoch[16] done. Loss: 6.434, Lr: 8.35e-03, Time: 217.64s
+2026-06-05 19:13:19 transreid.train INFO: Epoch[17] done. Loss: 5.989, Lr: 8.15e-03, Time: 217.82s
+2026-06-05 19:16:57 transreid.train INFO: Epoch[18] done. Loss: 5.545, Lr: 7.94e-03, Time: 217.80s
+2026-06-05 19:20:34 transreid.train INFO: Epoch[19] done. Loss: 5.108, Lr: 7.73e-03, Time: 217.78s
+2026-06-05 19:24:12 transreid.train INFO: Epoch[20] done. Loss: 4.677, Lr: 7.51e-03, Time: 217.87s
+2026-06-05 19:27:51 transreid.train INFO: Epoch[21] done. Loss: 4.262, Lr: 7.28e-03, Time: 218.16s
+2026-06-05 19:31:29 transreid.train INFO: Epoch[22] done. Loss: 3.866, Lr: 7.04e-03, Time: 218.08s
+2026-06-05 19:35:07 transreid.train INFO: Epoch[23] done. Loss: 3.490, Lr: 6.80e-03, Time: 218.09s
+2026-06-05 19:38:45 transreid.train INFO: Epoch[24] done. Loss: 3.143, Lr: 6.55e-03, Time: 218.01s
+2026-06-05 19:42:23 transreid.train INFO: Epoch[25] done. Loss: 2.829, Lr: 6.30e-03, Time: 218.01s
+2026-06-05 19:46:01 transreid.train INFO: Epoch[26] done. Loss: 2.549, Lr: 6.05e-03, Time: 217.86s
+2026-06-05 19:49:39 transreid.train INFO: Epoch[27] done. Loss: 2.297, Lr: 5.79e-03, Time: 217.89s
+2026-06-05 19:53:17 transreid.train INFO: Epoch[28] done. Loss: 2.081, Lr: 5.53e-03, Time: 217.88s
+2026-06-05 19:56:55 transreid.train INFO: Epoch[29] done. Loss: 1.887, Lr: 5.27e-03, Time: 217.88s
+2026-06-05 20:00:33 transreid.train INFO: Epoch[30] done. Loss: 1.727, Lr: 5.01e-03, Time: 217.86s
+2026-06-05 20:04:12 transreid.train INFO: Epoch[31] done. Loss: 1.582, Lr: 4.75e-03, Time: 218.14s
+2026-06-05 20:07:50 transreid.train INFO: Epoch[32] done. Loss: 1.468, Lr: 4.49e-03, Time: 218.25s
+2026-06-05 20:11:28 transreid.train INFO: Epoch[33] done. Loss: 1.364, Lr: 4.23e-03, Time: 218.02s
+2026-06-05 20:15:06 transreid.train INFO: Epoch[34] done. Loss: 1.277, Lr: 3.97e-03, Time: 218.23s
+2026-06-05 20:18:45 transreid.train INFO: Epoch[35] done. Loss: 1.204, Lr: 3.72e-03, Time: 218.54s
+2026-06-05 20:22:24 transreid.train INFO: Epoch[36] done. Loss: 1.139, Lr: 3.47e-03, Time: 218.57s
+2026-06-05 20:26:02 transreid.train INFO: Epoch[37] done. Loss: 1.087, Lr: 3.22e-03, Time: 218.03s
+2026-06-05 20:29:40 transreid.train INFO: Epoch[38] done. Loss: 1.039, Lr: 2.98e-03, Time: 218.12s
+2026-06-05 20:33:18 transreid.train INFO: Epoch[39] done. Loss: 0.999, Lr: 2.74e-03, Time: 217.97s
+2026-06-05 20:36:56 transreid.train INFO: Epoch[40] done. Loss: 0.964, Lr: 2.52e-03, Time: 217.96s
+2026-06-05 20:40:34 transreid.train INFO: Epoch[41] done. Loss: 0.931, Lr: 2.29e-03, Time: 218.08s
+2026-06-05 20:44:12 transreid.train INFO: Epoch[42] done. Loss: 0.902, Lr: 2.08e-03, Time: 218.23s
+2026-06-05 20:47:50 transreid.train INFO: Epoch[43] done. Loss: 0.881, Lr: 1.87e-03, Time: 218.03s
+2026-06-05 20:51:29 transreid.train INFO: Epoch[44] done. Loss: 0.858, Lr: 1.67e-03, Time: 218.16s
+2026-06-05 20:55:08 transreid.train INFO: Epoch[45] done. Loss: 0.837, Lr: 1.48e-03, Time: 218.89s
+2026-06-05 20:58:46 transreid.train INFO: Epoch[46] done. Loss: 0.822, Lr: 1.30e-03, Time: 218.44s
+2026-06-05 21:02:25 transreid.train INFO: Epoch[47] done. Loss: 0.807, Lr: 1.13e-03, Time: 218.20s
+2026-06-05 21:06:02 transreid.train INFO: Epoch[48] done. Loss: 0.795, Lr: 9.73e-04, Time: 217.79s
+2026-06-05 21:09:40 transreid.train INFO: Epoch[49] done. Loss: 0.784, Lr: 8.25e-04, Time: 217.47s
+2026-06-05 21:13:17 transreid.train INFO: Epoch[50] done. Loss: 0.773, Lr: 6.89e-04, Time: 217.32s
+2026-06-05 21:16:55 transreid.train INFO: Epoch[51] done. Loss: 0.764, Lr: 5.64e-04, Time: 216.97s
+2026-06-05 21:20:31 transreid.train INFO: Epoch[52] done. Loss: 0.759, Lr: 4.51e-04, Time: 216.83s
+2026-06-05 21:24:08 transreid.train INFO: Epoch[53] done. Loss: 0.753, Lr: 3.51e-04, Time: 216.88s
+2026-06-05 21:27:45 transreid.train INFO: Epoch[54] done. Loss: 0.746, Lr: 2.64e-04, Time: 216.91s
+2026-06-05 21:31:22 transreid.train INFO: Epoch[55] done. Loss: 0.743, Lr: 1.90e-04, Time: 216.78s
+2026-06-05 21:34:59 transreid.train INFO: Epoch[56] done. Loss: 0.741, Lr: 1.29e-04, Time: 216.65s
+2026-06-05 21:38:36 transreid.train INFO: Epoch[57] done. Loss: 0.737, Lr: 8.14e-05, Time: 216.46s
+2026-06-05 21:42:11 transreid.train INFO: Epoch[58] done. Loss: 0.737, Lr: 4.73e-05, Time: 215.85s
+2026-06-05 21:45:47 transreid.train INFO: Epoch[59] done. Loss: 0.734, Lr: 2.68e-05, Time: 215.80s
+2026-06-05 21:49:23 transreid.train INFO: Epoch[60] done. Loss: 0.732, Lr: 2.00e-05, Time: 215.95s

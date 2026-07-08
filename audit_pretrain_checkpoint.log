@@ -1,0 +1,20 @@
+nohup: ignoring input
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using stride: [16, 16], and patch number is num_y16 * num_x8
+using drop_out rate is : 0.0
+using attn_drop_out rate is : 0.0
+using drop_path rate is : 0.1
+================================================================================
+TRANSOSS PRETRAIN CHECKPOINT AUDIT
+================================================================================
+Checkpoint:             /ssd_data/lixiang_data/SDF-Net/logs/Pretrain_Backbone_2/custom_vit_b_pretrain_ep100.pth
+Raw keys:               150
+Target backbone keys:   159
+Shape-matched keys:     149
+Missing RGB keys:       []
+Missing SAR keys:       ['patch_embed_SAR.proj.weight', 'patch_embed_SAR.proj.bias']
+Shape mismatches:       1
+Missing target keys:    9
+
+FAIL: checkpoint does not contain a pretrained SAR patch embedding.
+      Do not use it as the final stage-1 TransOSS pretrain weight.
