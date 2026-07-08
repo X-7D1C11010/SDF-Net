@@ -159,9 +159,9 @@ class ImageDataset(Dataset):
             for img in self.dataset[index]:
                 img_path, pid, camid = img
                 im, img_size = self.get_image(img_path)
-                imgs.append((im, pid, camid, img_path.split("/")[-1], img_size))
+                imgs.append((im, pid, camid, img_path, img_size))
             return imgs
         else:
             img_path, pid, camid, trackid = self.dataset[index]
             img, img_size = self.get_image(img_path)
-            return img, pid, camid, trackid, img_path.split("/")[-1], img_size
+            return img, pid, camid, trackid, img_path, img_size

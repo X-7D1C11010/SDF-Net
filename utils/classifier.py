@@ -259,6 +259,8 @@ class CrossModalMatcher:
         threshold_mad_scale=3.0,
         threshold=None,
         require_mutual=False,
+        mutual_k=1,
+        metric_kwargs=None,
         **kwargs,
     ):
         self.distance_metric = distance_metric
@@ -267,6 +269,8 @@ class CrossModalMatcher:
         self.threshold_percentile = threshold_percentile
         self.threshold_mad_scale = threshold_mad_scale
         self.require_mutual = require_mutual
+        self.mutual_k = int(mutual_k)
+        self.metric_kwargs = metric_kwargs or {}
         self.classifier = None
         self._last_values = None
         self._initialize_classifier(threshold=threshold, **kwargs)
@@ -316,7 +320,7 @@ class CrossModalMatcher:
         values = self._get_or_compute_values(q_features, g_features)
         pred = self.classifier.predict(values)
         if self.require_mutual:
-            pred = pred * self._mutual_top1_mask(values)
+            pred = pred * self._mutual_topk_mask(values, self.mutual_k)
         return pred
 
     def predict_proba(self, q_features, g_features):
@@ -324,7 +328,12 @@ class CrossModalMatcher:
         return self.classifier.predict_proba(values)
 
     def _compute_values(self, q_features, g_features):
-        return compute_distance(q_features, g_features, metric=self.distance_metric)
+        return compute_distance(
+            q_features,
+            g_features,
+            metric=self.distance_metric,
+            **self.metric_kwargs,
+        )
 
     def _get_or_compute_values(self, q_features, g_features):
         if (
@@ -336,18 +345,23 @@ class CrossModalMatcher:
         self._last_values = self._compute_values(q_features, g_features)
         return self._last_values
 
-    def _mutual_top1_mask(self, values):
+    def _mutual_topk_mask(self, values, k=1):
+        k = max(1, int(k))
+        k_q = min(k, values.shape[1])
+        k_g = min(k, values.shape[0])
         if metric_type(self.distance_metric) == "distance":
-            q_best = np.argmin(values, axis=1)
-            g_best = np.argmin(values, axis=0)
+            q_top = np.argpartition(values, kth=k_q - 1, axis=1)[:, :k_q]
+            g_top = np.argpartition(values, kth=k_g - 1, axis=0)[:k_g, :]
         else:
-            q_best = np.argmax(values, axis=1)
-            g_best = np.argmax(values, axis=0)
+            q_top = np.argpartition(values, kth=values.shape[1] - k_q, axis=1)[:, -k_q:]
+            g_top = np.argpartition(values, kth=values.shape[0] - k_g, axis=0)[-k_g:, :]
 
         mask = np.zeros_like(values, dtype=np.int32)
-        for q_idx, g_idx in enumerate(q_best):
-            if g_best[g_idx] == q_idx:
-                mask[q_idx, g_idx] = 1
+        gallery_to_queries = [set(g_top[:, g_idx].tolist()) for g_idx in range(values.shape[1])]
+        for q_idx in range(values.shape[0]):
+            for g_idx in q_top[q_idx]:
+                if q_idx in gallery_to_queries[int(g_idx)]:
+                    mask[q_idx, int(g_idx)] = 1
         return mask
 
     def get_params(self):
@@ -355,6 +369,8 @@ class CrossModalMatcher:
             "distance_metric": self.distance_metric,
             "classifier_type": self.classifier_type,
             "require_mutual": self.require_mutual,
+            "mutual_k": self.mutual_k,
+            "metric_kwargs": self.metric_kwargs,
         }
         if hasattr(self.classifier, "threshold"):
             params.update(

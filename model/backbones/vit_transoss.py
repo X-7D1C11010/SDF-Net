@@ -517,8 +517,31 @@ class TransOSS(nn.Module):
             param_dict = param_dict["model"]
         if "state_dict" in param_dict:
             param_dict = param_dict["state_dict"]
+
+        target_state = self.state_dict()
+        normalized_param_dict = {}
         for k, v in param_dict.items():
-            if "head" in k or "dist" in k:
+            key = k.replace("module.", "")
+            if key not in target_state and key.startswith("base."):
+                key = key[len("base.") :]
+            normalized_param_dict[key] = v
+
+        loaded_keys = []
+        partial_keys = []
+        skipped_unexpected = []
+        skipped_shape = []
+
+        for k, v in normalized_param_dict.items():
+            if (
+                "head" in k
+                or "dist" in k
+                or k.startswith("classifier")
+                or k.startswith("bottleneck")
+                or k == "logit_scale"
+            ):
+                continue
+            if k not in target_state:
+                skipped_unexpected.append(k)
                 continue
             if "patch_embed.proj.weight" in k and len(v.shape) < 4:
                 # For old models that I trained prior to conv based patchification
@@ -555,27 +578,46 @@ class TransOSS(nn.Module):
                         cls_pos = v[:, 0:1]
                         patch_pos = v[:, 1:]
                         v = torch.cat([cls_pos, cls_pos, patch_pos], dim=1)
+                partial_keys.append(k)
 
-            try:
-                self.state_dict()[k].copy_(v)
-            except:
-                print("===========================ERROR=========================")
-                if "mie_embed" in k:
-                    print(f"{k} not in the model")
-                    continue
-                print(
-                    "shape do not match in k :{}: param_dict{} vs self.state_dict(){}".format(
-                        k, v.shape, self.state_dict()[k].shape
-                    )
-                )
-        if "patch_embed_SAR.proj.bias" not in param_dict.keys():
+            if target_state[k].shape != v.shape:
+                skipped_shape.append((k, tuple(v.shape), tuple(target_state[k].shape)))
+                continue
+
+            target_state[k].copy_(v)
+            loaded_keys.append(k)
+
+        if "patch_embed_SAR.proj.bias" not in normalized_param_dict.keys():
             print("patch_embed_SAR not in the pth")
-            self.state_dict()["patch_embed_SAR.proj.bias"].copy_(
-                self.state_dict()["patch_embed.proj.bias"]
+            target_state["patch_embed_SAR.proj.bias"].copy_(
+                target_state["patch_embed.proj.bias"]
             )
-            self.state_dict()["patch_embed_SAR.proj.weight"].copy_(
-                self.state_dict()["patch_embed.proj.weight"]
+            target_state["patch_embed_SAR.proj.weight"].copy_(
+                target_state["patch_embed.proj.weight"]
             )
+            loaded_keys.extend(["patch_embed_SAR.proj.bias", "patch_embed_SAR.proj.weight"])
+        missing_keys = [
+            key
+            for key in target_state.keys()
+            if key not in loaded_keys and key not in partial_keys
+        ]
+        print(
+            "Loaded TransOSS backbone from {} | loaded: {} | partial: {} | "
+            "unexpected: {} | shape skipped: {} | missing: {}".format(
+                model_path,
+                len(loaded_keys),
+                len(partial_keys),
+                len(skipped_unexpected),
+                len(skipped_shape),
+                len(missing_keys),
+            )
+        )
+        if skipped_unexpected:
+            print("  Unexpected keys (first 10): {}".format(skipped_unexpected[:10]))
+        if skipped_shape:
+            print("  Shape-skipped keys (first 10): {}".format(skipped_shape[:10]))
+        if missing_keys:
+            print("  Missing keys (first 20): {}".format(missing_keys[:20]))
 
 
 def resize_pos_embed(posemb, posemb_new, hight, width):

@@ -34,6 +34,8 @@ class CrossModalMatchingPipeline:
         threshold_mad_scale=3.0,
         threshold=None,
         require_mutual=False,
+        mutual_k=1,
+        metric_kwargs=None,
         **kwargs,
     ):
         self.matcher = CrossModalMatcher(
@@ -44,6 +46,8 @@ class CrossModalMatchingPipeline:
             threshold_mad_scale=threshold_mad_scale,
             threshold=threshold,
             require_mutual=require_mutual,
+            mutual_k=mutual_k,
+            metric_kwargs=metric_kwargs,
             **kwargs,
         )
         return self.matcher
@@ -612,7 +616,7 @@ def compare_distance_metrics(
     **matcher_kwargs,
 ):
     if metrics is None:
-        metrics = ["cosine_distance", "euclidean", "hybrid", "manhattan"]
+        metrics = ["cosine_distance", "csls_similarity", "hybrid"]
 
     pipeline = CrossModalMatchingPipeline(cfg, weight_path)
     print("\nExtracting query features...")

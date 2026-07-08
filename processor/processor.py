@@ -124,6 +124,10 @@ def do_train(
     loss_meter = AverageMeter()
     acc_meter = AverageMeter()
     loss_base_meter = AverageMeter()
+    loss_id_meter = AverageMeter()
+    loss_triplet_meter = AverageMeter()
+    loss_cm_contrast_meter = AverageMeter()
+    loss_cm_proto_meter = AverageMeter()
     loss_orth_meter = AverageMeter()
     loss_struct_meter = AverageMeter()
 
@@ -146,6 +150,10 @@ def do_train(
         loss_meter.reset()
         acc_meter.reset()
         loss_base_meter.reset()
+        loss_id_meter.reset()
+        loss_triplet_meter.reset()
+        loss_cm_contrast_meter.reset()
+        loss_cm_proto_meter.reset()
         loss_orth_meter.reset()
         loss_struct_meter.reset()
         evaluator.reset()
@@ -172,9 +180,19 @@ def do_train(
                         img, target, cam_label=target_cam, img_wh=img_wh
                     )
                     cls_score = score_fuse
-                    loss_base = loss_fn(
-                        score_fuse, feat_fuse, target, target_cam, f_struct
+                    loss_base_out = loss_fn(
+                        score_fuse,
+                        feat_fuse,
+                        target,
+                        target_cam,
+                        f_struct,
+                        return_details=True,
                     )
+                    if isinstance(loss_base_out, tuple):
+                        loss_base, loss_details = loss_base_out
+                    else:
+                        loss_base = loss_base_out
+                        loss_details = {}
 
                     f_shared_norm = torch.nn.functional.normalize(
                         feat_shared, p=2, dim=1
@@ -203,7 +221,19 @@ def do_train(
                 else:
                     outputs = model(img, target, cam_label=target_cam, img_wh=img_wh)
                     cls_score, feat, f_struct = outputs
-                    loss_base = loss_fn(cls_score, feat, target, target_cam, f_struct)
+                    loss_base_out = loss_fn(
+                        cls_score,
+                        feat,
+                        target,
+                        target_cam,
+                        f_struct,
+                        return_details=True,
+                    )
+                    if isinstance(loss_base_out, tuple):
+                        loss_base, loss_details = loss_base_out
+                    else:
+                        loss_base = loss_base_out
+                        loss_details = {}
 
                     if (
                         structure_loss_func is not None
@@ -239,6 +269,14 @@ def do_train(
 
             loss_meter.update(loss.item(), img.shape[0])
             loss_base_meter.update(loss_base.item(), img.shape[0])
+            loss_id_meter.update(float(loss_details.get("id", 0.0)), img.shape[0])
+            loss_triplet_meter.update(float(loss_details.get("triplet", 0.0)), img.shape[0])
+            loss_cm_contrast_meter.update(
+                float(loss_details.get("cm_contrast", 0.0)), img.shape[0]
+            )
+            loss_cm_proto_meter.update(
+                float(loss_details.get("cm_proto", 0.0)), img.shape[0]
+            )
             loss_orth_meter.update(current_loss_orth, img.shape[0])
             loss_struct_meter.update(current_loss_struct, img.shape[0])
             acc_meter.update(acc, 1)
@@ -249,7 +287,11 @@ def do_train(
             current_lr = scheduler._get_lr(epoch)[0]
             logger.info(
                 f"Epoch[{epoch}] done. "
-                f"Loss: {loss_meter.avg:.3f} (Base: {loss_base_meter.avg:.3f}, Orth: {loss_orth_meter.avg:.3f}, Struct: {loss_struct_meter.avg:.3f}), "
+                f"Loss: {loss_meter.avg:.3f} "
+                f"(Base: {loss_base_meter.avg:.3f}, ID: {loss_id_meter.avg:.3f}, "
+                f"Tri: {loss_triplet_meter.avg:.3f}, CMCon: {loss_cm_contrast_meter.avg:.3f}, "
+                f"CMProto: {loss_cm_proto_meter.avg:.3f}, Orth: {loss_orth_meter.avg:.3f}, "
+                f"Struct: {loss_struct_meter.avg:.3f}), "
                 f"Acc: {acc_meter.avg:.3%}, "
                 f"Lr: {current_lr:.2e}"
             )

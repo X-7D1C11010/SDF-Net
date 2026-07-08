@@ -5,7 +5,7 @@ import numpy as np
 import random
 from .bases import ImageDataset
 from timm.data.random_erasing import RandomErasing
-from .sampler import RandomIdentitySampler
+from .sampler import RandomCrossModalIdentitySampler, RandomIdentitySampler
 from .sampler_ddp import RandomIdentitySampler_DDP
 import torch.distributed as dist
 from .hoss import HOSS
@@ -89,7 +89,9 @@ def make_dataloader(cfg, is_train=True):
     num_workers = cfg.DATALOADER.NUM_WORKERS
 
     dataset = __factory[cfg.DATASETS.NAMES](
-        root=cfg.DATASETS.ROOT_DIR, is_train=is_train
+        root=cfg.DATASETS.ROOT_DIR,
+        is_train=is_train,
+        train_pair_only=cfg.DATASETS.TRAIN_PAIR_ONLY,
     )
     if len(dataset.query) == 0:
         raise RuntimeError(
@@ -112,6 +114,11 @@ def make_dataloader(cfg, is_train=True):
                 "Training set is empty. For MergedDataset, expected images under "
                 "bounding_box_train with filenames like 019_s3042c001_sar.png "
                 "or 024_s19351c001_opt.jpg."
+            )
+        if cfg.DATALOADER.CROSS_MODAL_SAMPLER and dataset.num_train_cams < 2:
+            raise RuntimeError(
+                "DATALOADER.CROSS_MODAL_SAMPLER requires both opt and sar modalities "
+                "in the training set."
             )
         train_set = ImageDataset(dataset.train, train_transforms)
         train_set_normal = ImageDataset(dataset.train, val_transforms)
@@ -146,10 +153,17 @@ def make_dataloader(cfg, is_train=True):
                     generator=torch.Generator().manual_seed(cfg.SOLVER.SEED),
                 )
             else:
+                sampler_cls = (
+                    RandomCrossModalIdentitySampler
+                    if cfg.DATALOADER.CROSS_MODAL_SAMPLER
+                    else RandomIdentitySampler
+                )
+                if cfg.DATALOADER.CROSS_MODAL_SAMPLER:
+                    print("using cross-modal identity sampler")
                 train_loader = DataLoader(
                     train_set,
                     batch_size=cfg.SOLVER.IMS_PER_BATCH,
-                    sampler=RandomIdentitySampler(
+                    sampler=sampler_cls(
                         dataset.train,
                         cfg.SOLVER.IMS_PER_BATCH,
                         cfg.DATALOADER.NUM_INSTANCE,

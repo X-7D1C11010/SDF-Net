@@ -82,32 +82,55 @@ def make_loss(cfg, num_classes):  # modified by gu
         else:
             feat_main = feat
         aux_loss = feat_main.new_tensor(0.0)
+        details = {
+            "cm_contrast": feat_main.new_tensor(0.0),
+            "cm_proto": feat_main.new_tensor(0.0),
+        }
         if target_cam is None:
-            return aux_loss
+            return aux_loss, details
 
         if cfg.MODEL.CM_CONTRAST_LOSS_WEIGHT > 0:
-            aux_loss = aux_loss + cfg.MODEL.CM_CONTRAST_LOSS_WEIGHT * cross_modal_contrastive_loss(
+            contrast_loss = cross_modal_contrastive_loss(
                 feat_main,
                 target,
                 target_cam,
                 temperature=cfg.MODEL.CM_CONTRAST_TEMP,
             )
+            details["cm_contrast"] = contrast_loss
+            aux_loss = aux_loss + cfg.MODEL.CM_CONTRAST_LOSS_WEIGHT * contrast_loss
         if cfg.MODEL.CM_PROTO_LOSS_WEIGHT > 0:
-            aux_loss = aux_loss + cfg.MODEL.CM_PROTO_LOSS_WEIGHT * cross_modal_prototype_loss(
+            proto_loss = cross_modal_prototype_loss(
                 feat_main,
                 target,
                 target_cam,
             )
-        return aux_loss
+            details["cm_proto"] = proto_loss
+            aux_loss = aux_loss + cfg.MODEL.CM_PROTO_LOSS_WEIGHT * proto_loss
+        return aux_loss, details
+
+    def finalize_loss(total_loss, id_loss, triplet_loss, aux_details, return_details):
+        if not return_details:
+            return total_loss
+        details = {
+            "id": id_loss.detach(),
+            "triplet": triplet_loss.detach(),
+            "cm_contrast": aux_details["cm_contrast"].detach(),
+            "cm_proto": aux_details["cm_proto"].detach(),
+        }
+        return total_loss, details
 
     if sampler == "softmax":
 
-        def loss_func(score, feat, target, target_cam=None, f_struct=None):
-            return F.cross_entropy(score, target) + metric_aux_loss(feat, target, target_cam)
+        def loss_func(score, feat, target, target_cam=None, f_struct=None, return_details=False):
+            id_loss = F.cross_entropy(score, target)
+            triplet_loss = id_loss.new_tensor(0.0)
+            aux_loss, aux_details = metric_aux_loss(feat, target, target_cam)
+            total_loss = id_loss + aux_loss
+            return finalize_loss(total_loss, id_loss, triplet_loss, aux_details, return_details)
 
     elif sampler == "softmax_triplet":
 
-        def loss_func(score, feat, target, target_cam, f_struct=None):
+        def loss_func(score, feat, target, target_cam, f_struct=None, return_details=False):
             if cfg.MODEL.METRIC_LOSS_TYPE == "triplet":
                 if cfg.MODEL.IF_LABELSMOOTH == "on":
                     if isinstance(score, list):
@@ -124,10 +147,18 @@ def make_loss(cfg, num_classes):  # modified by gu
                     else:
                         TRI_LOSS = triplet(feat, target)[0]
 
-                    return (
+                    aux_loss, aux_details = metric_aux_loss(feat, target, target_cam)
+                    total_loss = (
                         cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS
                         + cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
-                        + metric_aux_loss(feat, target, target_cam)
+                        + aux_loss
+                    )
+                    return finalize_loss(
+                        total_loss,
+                        ID_LOSS,
+                        TRI_LOSS,
+                        aux_details,
+                        return_details,
                     )
                 else:
                     if isinstance(score, list):
@@ -146,10 +177,18 @@ def make_loss(cfg, num_classes):  # modified by gu
                     else:
                         TRI_LOSS = triplet(feat, target)[0]
 
-                    return (
+                    aux_loss, aux_details = metric_aux_loss(feat, target, target_cam)
+                    total_loss = (
                         cfg.MODEL.ID_LOSS_WEIGHT * ID_LOSS
                         + cfg.MODEL.TRIPLET_LOSS_WEIGHT * TRI_LOSS
-                        + metric_aux_loss(feat, target, target_cam)
+                        + aux_loss
+                    )
+                    return finalize_loss(
+                        total_loss,
+                        ID_LOSS,
+                        TRI_LOSS,
+                        aux_details,
+                        return_details,
                     )
             else:
                 print(

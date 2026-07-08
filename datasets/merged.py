@@ -9,7 +9,15 @@ class MergedDataset(BaseImageDataset):
     合并的多数据集 - 支持光学和SAR跨模态ReID
     """
 
-    def __init__(self, root="", verbose=True, pid_begin=0, is_train=True, **kwargs):
+    def __init__(
+        self,
+        root="",
+        verbose=True,
+        pid_begin=0,
+        is_train=True,
+        train_pair_only=False,
+        **kwargs,
+    ):
         super(MergedDataset, self).__init__()
         self.dataset_dir = root
         self.train_dir = osp.join(self.dataset_dir, "bounding_box_train")
@@ -17,6 +25,7 @@ class MergedDataset(BaseImageDataset):
         self.gallery_dir = osp.join(self.dataset_dir, "bounding_box_test")
 
         self.is_train = is_train
+        self.train_pair_only = train_pair_only
 
         self._check_before_run()
         self.pid_begin = pid_begin
@@ -149,11 +158,18 @@ class MergedDataset(BaseImageDataset):
                 else:
                     pid2opt[pid].append(img_path)
 
-        pid2label = {pid: label for label, pid in enumerate(pid_container)}
+        if self.train_pair_only:
+            selected_pids = sorted(pid for pid in pid_container if pid in pid2opt and pid in pid2sar)
+        else:
+            selected_pids = sorted(pid_container)
+
+        pid2label = {pid: label for label, pid in enumerate(selected_pids)}
 
         dataset = []
         for img_path in sorted(all_paths):
             pid = self._extract_pid(img_path)
+            if pid not in pid2label:
+                continue
             camid = self._extract_camid(img_path)
             
             if relabel:

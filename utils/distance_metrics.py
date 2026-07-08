@@ -13,8 +13,9 @@ DISTANCE_METRICS = {
     "minkowski",
     "mahalanobis",
     "hybrid",
+    "csls_distance",
 }
-SIMILARITY_METRICS = {"cosine_similarity"}
+SIMILARITY_METRICS = {"cosine_similarity", "csls_similarity"}
 
 
 def _to_numpy(x):
@@ -58,6 +59,37 @@ def cosine_similarity(qf, gf):
 
 def cosine_distance(qf, gf):
     return 1.0 - cosine_similarity(qf, gf)
+
+
+def _topk_mean(values, k, axis):
+    k = int(k)
+    if k <= 0:
+        raise ValueError("CSLS k must be a positive integer.")
+    k = min(k, values.shape[axis])
+    if axis == 1:
+        topk = np.partition(values, values.shape[1] - k, axis=1)[:, -k:]
+    elif axis == 0:
+        topk = np.partition(values, values.shape[0] - k, axis=0)[-k:, :]
+    else:
+        raise ValueError("axis must be 0 or 1")
+    return topk.mean(axis=axis)
+
+
+def csls_similarity(qf, gf, k=10):
+    """
+    Cross-domain similarity local scaling.
+
+    CSLS adjusts cosine similarity with local neighborhood density, which reduces
+    hubness in cross-domain retrieval without using labels.
+    """
+    sim = cosine_similarity(qf, gf)
+    r_q = _topk_mean(sim, k=k, axis=1)
+    r_g = _topk_mean(sim, k=k, axis=0)
+    return 2.0 * sim - r_q[:, None] - r_g[None, :]
+
+
+def csls_distance(qf, gf, k=10):
+    return -csls_similarity(qf, gf, k=k)
 
 
 def manhattan_distance(qf, gf):
@@ -107,6 +139,8 @@ __distance_metrics__ = {
     "euclidean": euclidean_distance,
     "cosine_similarity": cosine_similarity,
     "cosine_distance": cosine_distance,
+    "csls_similarity": csls_similarity,
+    "csls_distance": csls_distance,
     "manhattan": manhattan_distance,
     "chebyshev": chebyshev_distance,
     "minkowski": minkowski_distance,

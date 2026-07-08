@@ -18,13 +18,15 @@ DISTANCE_CHOICES = [
     "euclidean",
     "cosine_distance",
     "cosine_similarity",
+    "csls_similarity",
+    "csls_distance",
     "manhattan",
     "chebyshev",
     "minkowski",
     "mahalanobis",
     "hybrid",
 ]
-DEFAULT_COMPARE_METRICS = ["cosine_distance", "euclidean", "hybrid"]
+DEFAULT_COMPARE_METRICS = ["cosine_distance", "csls_similarity", "hybrid"]
 
 
 def parse_args():
@@ -85,7 +87,19 @@ def parse_args():
     parser.add_argument(
         "--require_mutual",
         action="store_true",
-        help="keep only thresholded pairs that are mutual top-1 matches",
+        help="keep only thresholded pairs that are bidirectional top-k consistent",
+    )
+    parser.add_argument(
+        "--mutual_k",
+        default=1,
+        type=int,
+        help="when --require_mutual is enabled, keep bidirectional top-k consistent pairs",
+    )
+    parser.add_argument(
+        "--csls_k",
+        default=10,
+        type=int,
+        help="local neighborhood size for csls_similarity/csls_distance",
     )
     parser.add_argument(
         "--supervised_matcher",
@@ -185,13 +199,27 @@ def split_query_gallery(features, pids, camids, paths, num_query):
 def matcher_kwargs(args):
     threshold = args.manual_threshold
     strategy = "manual" if threshold is not None else args.threshold_strategy
+    metric_kwargs = {}
+    if args.distance_metric in ("csls_similarity", "csls_distance"):
+        metric_kwargs["k"] = args.csls_k
     return {
         "threshold_strategy": strategy,
         "threshold_percentile": args.threshold_percentile,
         "threshold_mad_scale": args.threshold_mad_scale,
         "threshold": threshold,
         "require_mutual": args.require_mutual,
+        "mutual_k": args.mutual_k,
+        "metric_kwargs": metric_kwargs,
     }
+
+
+def matcher_kwargs_for_metric(args, metric):
+    kwargs = matcher_kwargs(args)
+    if metric in ("csls_similarity", "csls_distance"):
+        kwargs["metric_kwargs"] = {"k": args.csls_k}
+    else:
+        kwargs["metric_kwargs"] = {}
+    return kwargs
 
 
 def run_single_metric(args, pipeline, data, progress, save_path):
@@ -251,7 +279,7 @@ def run_metric_comparison(args, pipeline, data, save_path):
         pipeline.setup_matcher(
             distance_metric=metric,
             classifier_type=args.classifier_type,
-            **matcher_kwargs(args),
+            **matcher_kwargs_for_metric(args, metric),
         )
         pipeline.calibrate_matcher(
             q_features,
