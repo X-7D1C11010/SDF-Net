@@ -17,6 +17,12 @@ def parse_args():
         action="store_true",
         help="audit query/gallery only; use this for independent test roots without training images",
     )
+    parser.add_argument(
+        "opts",
+        help="Modify config options using command-line KEY VALUE pairs",
+        default=None,
+        nargs=argparse.REMAINDER,
+    )
     return parser.parse_args()
 
 
@@ -62,6 +68,7 @@ def main():
     args = parse_args()
     if args.config_file:
         cfg.merge_from_file(args.config_file)
+    cfg.merge_from_list(args.opts or [])
     root = args.root or cfg.DATASETS.ROOT_DIR
 
     print("=" * 80)
