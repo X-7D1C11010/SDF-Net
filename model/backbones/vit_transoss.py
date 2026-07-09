@@ -1,4 +1,5 @@
 import math
+import os
 from functools import partial
 from itertools import repeat
 
@@ -512,6 +513,15 @@ class TransOSS(nn.Module):
         return self.forward_features(x, cam_label, img_wh)
 
     def load_param(self, model_path):
+        if not model_path or not os.path.isfile(model_path):
+            raise FileNotFoundError(
+                f"Pretrained checkpoint not found: {model_path}\n"
+                "This path comes from MODEL.PRETRAIN_PATH and is used to "
+                "initialize the backbone before second-stage ReID training. "
+                "It is not the second-stage TEST.WEIGHT checkpoint. Generate "
+                "it with pretrain_transoss_contrastive.py, or override "
+                "MODEL.PRETRAIN_PATH with an existing backbone checkpoint."
+            )
         param_dict = torch.load(model_path, map_location="cpu")
         if "model" in param_dict:
             param_dict = param_dict["model"]
