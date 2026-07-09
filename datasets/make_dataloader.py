@@ -92,6 +92,8 @@ def make_dataloader(cfg, is_train=True):
         root=cfg.DATASETS.ROOT_DIR,
         is_train=is_train,
         train_pair_only=cfg.DATASETS.TRAIN_PAIR_ONLY,
+        pair_strategy=cfg.DATASETS.PAIR_STRATEGY,
+        max_pair_per_id=cfg.DATASETS.MAX_PAIR_PER_ID,
     )
     if len(dataset.query) == 0:
         raise RuntimeError(

@@ -34,9 +34,11 @@ def parse_args():
     parser.add_argument(
         "--identity_mode",
         default="annotation_id",
-        choices=["annotation_id", "file_line"],
+        choices=["annotation_id", "scene_object_id", "tile_object_id", "file_line"],
         help=(
             "annotation_id uses the last annotation field as ReID identity. "
+            "scene_object_id uses first filename token plus annotation ID. "
+            "tile_object_id uses tile filename without modality plus annotation ID. "
             "file_line treats every annotation as a separate identity."
         ),
     )
@@ -166,9 +168,25 @@ def numeric_key(value):
         return (1, value)
 
 
+def strip_modality_from_stem(stem):
+    lower = stem.lower()
+    for suffix in ("_rgb_clouds", "_rgb", "_opt", "_sar", "_vis", "_visible", "_ir"):
+        if lower.endswith(suffix):
+            return lower[: -len(suffix)]
+    return lower
+
+
+def scene_token_from_stem(stem):
+    return strip_modality_from_stem(stem).split("_", 1)[0]
+
+
 def make_raw_identity(annotation, label_stem, identity_mode):
     if identity_mode == "annotation_id":
         return annotation["object_id"]
+    if identity_mode == "scene_object_id":
+        return f"{scene_token_from_stem(label_stem)}:{annotation['object_id']}"
+    if identity_mode == "tile_object_id":
+        return f"{strip_modality_from_stem(label_stem)}:{annotation['object_id']}"
     return f"{label_stem}:{annotation['line_no']}"
 
 

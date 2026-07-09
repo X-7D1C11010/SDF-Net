@@ -16,6 +16,8 @@ class MergedDataset(BaseImageDataset):
         pid_begin=0,
         is_train=True,
         train_pair_only=False,
+        pair_strategy="cartesian",
+        max_pair_per_id=0,
         **kwargs,
     ):
         super(MergedDataset, self).__init__()
@@ -26,6 +28,8 @@ class MergedDataset(BaseImageDataset):
 
         self.is_train = is_train
         self.train_pair_only = train_pair_only
+        self.pair_strategy = pair_strategy
+        self.max_pair_per_id = int(max_pair_per_id or 0)
 
         self._check_before_run()
         self.pid_begin = pid_begin
@@ -181,14 +185,51 @@ class MergedDataset(BaseImageDataset):
         for pid in pid2opt.keys():
             if pid not in pid2sar:
                 continue
-            for opt_path in pid2opt[pid]:
-                for sar_path in pid2sar[pid]:
-                    dataset_pair.append([
-                        (opt_path, self.pid_begin + pid2label[pid], 0, 1),
-                        (sar_path, self.pid_begin + pid2label[pid], 1, 1),
-                    ])
+            pid_pairs = self._make_pid_pairs(
+                pid2opt[pid],
+                pid2sar[pid],
+                self.pid_begin + pid2label[pid],
+            )
+            dataset_pair.extend(pid_pairs)
 
         return dataset, dataset_pair
+
+    def _make_pid_pairs(self, opt_paths, sar_paths, relabeled_pid):
+        if self.pair_strategy == "zip":
+            max_len = max(len(opt_paths), len(sar_paths))
+            pairs = [
+                (opt_paths[idx % len(opt_paths)], sar_paths[idx % len(sar_paths)])
+                for idx in range(max_len)
+            ]
+        elif self.pair_strategy == "min_zip":
+            min_len = min(len(opt_paths), len(sar_paths))
+            pairs = [
+                (opt_paths[idx], sar_paths[idx])
+                for idx in range(min_len)
+            ]
+        elif self.pair_strategy == "cartesian":
+            pairs = [
+                (opt_path, sar_path)
+                for opt_path in opt_paths
+                for sar_path in sar_paths
+            ]
+        else:
+            raise ValueError(
+                "Unknown DATASETS.PAIR_STRATEGY '{}'. Use cartesian, zip, or min_zip.".format(
+                    self.pair_strategy
+                )
+            )
+
+        if self.max_pair_per_id > 0:
+            pairs = pairs[: self.max_pair_per_id]
+
+        return [
+            [
+                (opt_path, relabeled_pid, 0, 1),
+                (sar_path, relabeled_pid, 1, 1),
+            ]
+            for opt_path, sar_path in pairs
+        ]
 
     @staticmethod
     def _collect_image_paths(dir_path, recursive=False):

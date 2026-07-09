@@ -1,4 +1,5 @@
 import argparse
+import csv
 import os
 from collections import Counter
 
@@ -56,12 +57,59 @@ def summarize_pairs(dataset):
     print("\n[train pairs]")
     print(f"  pairs:      {len(dataset.train_pair)}")
     print(f"  paired ids: {len(paired_pids)}")
+    if len(dataset.train_pair) > max(100000, dataset.num_train_imgs * 100):
+        print(
+            "  warning:    pair count is very large; this is usually caused by "
+            "cartesian opt x sar pairing for IDs with many samples."
+        )
+        print(
+            "              Consider DATASETS.PAIR_STRATEGY zip or "
+            "DATASETS.MAX_PAIR_PER_ID 64 when using train_pair.py."
+        )
 
 
 def print_intersection(name, left, right):
     inter = left & right
     print(f"  {name}: {len(inter)}")
     return inter
+
+
+def summarize_crop_manifest(root):
+    manifest_path = os.path.join(root, "crop_manifest.csv")
+    if not os.path.exists(manifest_path):
+        return
+
+    by_partition = {"train": set(), "query": set(), "gallery": set()}
+    per_raw = Counter()
+    with open(manifest_path, "r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        if not {"raw_identity", "partition"}.issubset(set(reader.fieldnames or [])):
+            return
+        for row in reader:
+            raw_identity = row.get("raw_identity")
+            partition = row.get("partition")
+            if raw_identity and partition in by_partition:
+                by_partition[partition].add(raw_identity)
+                per_raw[raw_identity] += 1
+
+    train_query = by_partition["train"] & by_partition["query"]
+    train_gallery = by_partition["train"] & by_partition["gallery"]
+    query_gallery = by_partition["query"] & by_partition["gallery"]
+
+    print("\n[crop manifest raw-ID check]")
+    print(f"  raw train ids:       {len(by_partition['train'])}")
+    print(f"  raw query ids:       {len(by_partition['query'])}")
+    print(f"  raw gallery ids:     {len(by_partition['gallery'])}")
+    print(f"  raw train & query:   {len(train_query)}")
+    print(f"  raw train & gallery: {len(train_gallery)}")
+    print(f"  raw query & gallery: {len(query_gallery)}")
+    if train_query or train_gallery:
+        print(
+            "  warning: raw identities overlap between train and evaluation splits. "
+            "Standard train relabeling may hide this overlap."
+        )
+    for raw_identity, count in per_raw.most_common(5):
+        print(f"  frequent raw id:     {raw_identity} -> {count} crops")
 
 
 def main():
@@ -75,14 +123,35 @@ def main():
     print("MERGED REID DATASET AUDIT")
     print("=" * 80)
     print(f"Root: {root}")
+    if not os.path.exists(root):
+        print(f"  MISS {root}")
+        print("\n[error] dataset root does not exist.")
+        return 1
+
+    missing_required = []
     for rel in ["bounding_box_train", "query", "bounding_box_test"]:
         path = os.path.join(root, rel)
+        if not os.path.exists(path):
+            missing_required.append(path)
         print(f"  {'OK ' if os.path.exists(path) else 'MISS'} {path}")
     for rel in ["bounding_box_train/opt", "bounding_box_train/sar"]:
         path = os.path.join(root, rel)
         print(f"  {'OK ' if os.path.exists(path) else 'SKIP'} {path} (optional; modality is parsed from filename)")
 
-    dataset = MergedDataset(root=root, is_train=not args.eval_only, verbose=False)
+    if missing_required:
+        print("\n[error] required ReID folders are missing:")
+        for path in missing_required:
+            print(f"  {path}")
+        return 1
+
+    dataset = MergedDataset(
+        root=root,
+        is_train=not args.eval_only,
+        verbose=False,
+        train_pair_only=cfg.DATASETS.TRAIN_PAIR_ONLY,
+        pair_strategy=cfg.DATASETS.PAIR_STRATEGY,
+        max_pair_per_id=cfg.DATASETS.MAX_PAIR_PER_ID,
+    )
 
     if args.eval_only:
         train_ids, train_counts = set(), Counter()
@@ -116,7 +185,9 @@ def main():
         print("\n[error] query and gallery have no overlapping IDs; ReID metrics are invalid.")
     if not args.eval_only and len(dataset.train_pair) == 0:
         print("\n[error] no opt/sar training pairs were found; cross-modal training is invalid.")
+    summarize_crop_manifest(root)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
