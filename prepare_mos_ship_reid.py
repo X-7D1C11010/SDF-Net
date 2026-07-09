@@ -73,6 +73,14 @@ def parse_args():
             "into train/query/gallery. Use only for sanity checks, not final evaluation."
         ),
     )
+    parser.add_argument(
+        "--drop_train_eval_overlap",
+        action="store_true",
+        help=(
+            "Remove training records whose raw identity also appears in query/gallery. "
+            "Use this to build a leakage-free ReID split from MOS-Ship."
+        ),
+    )
     parser.add_argument("--eval_ratio", default=0.2, type=float)
     parser.add_argument("--camera_token", default="c1", type=str)
     parser.add_argument("--image_id_start", default=1, type=int)
@@ -343,6 +351,11 @@ def merge_identity_modalities(records):
 
 def filter_records(args, records):
     train_paired, eval_paired, all_paired = paired_identity_sets(records)
+    eval_raw_ids = {
+        record["raw_identity"]
+        for record in records
+        if record["partition"] in ("query", "gallery")
+    }
     filtered = []
     for record in records:
         keep = True
@@ -350,6 +363,13 @@ def filter_records(args, records):
             keep = record["raw_identity"] in train_paired
         if record["partition"] in ("query", "gallery") and args.require_pair_for_eval:
             keep = record["raw_identity"] in eval_paired
+        if (
+            keep
+            and args.drop_train_eval_overlap
+            and record["partition"] == "train"
+            and record["raw_identity"] in eval_raw_ids
+        ):
+            keep = False
         if keep:
             filtered.append(record)
 
