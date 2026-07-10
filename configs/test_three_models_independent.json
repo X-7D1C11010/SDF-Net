@@ -1,0 +1,36 @@
+{
+  "test_config": "configs/SDF-Net_Test_Independent.yml",
+  "output_dir": "./logs/Independent_Test_ThreeModels",
+  "seed": 1949,
+  "distance_metric": "cosine_distance",
+  "classifier_type": "threshold",
+  "threshold_strategy": "mad",
+  "threshold_percentile": 95.0,
+  "threshold_mad_scale": 3.0,
+  "require_mutual": false,
+  "mutual_k": 1,
+  "csls_k": 10,
+  "topk": 10,
+  "compare_metrics": false,
+  "comparison_metrics": [
+    "cosine_distance",
+    "csls_similarity",
+    "hybrid"
+  ],
+  "save_matrices": false,
+  "skip_missing": false,
+  "models": [
+    {
+      "name": "hoss_only",
+      "weight_path": "/ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_HOSS_Paired/best.pth"
+    },
+    {
+      "name": "mos_ship_only",
+      "weight_path": "/ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_MOSShip_Paired/best.pth"
+    },
+    {
+      "name": "hoss_mos_ship_merged",
+      "weight_path": "/ssd_data/lixiang_data/SDF-Net/logs/SDF-Net_HOSS_MOSShip_Paired/best.pth"
+    }
+  ]
+}
