@@ -101,11 +101,11 @@ def collect_images(split_dir):
 def extract_pid(path):
     stem = path.stem.lower()
     patterns = [
-        r"^(\d+)_s\d+c\d+_(opt|sar)$",
-        r"^(\d+)_s\d+c\d+$",
-        r"^(\d+)[_-]",
-        r"^(\d+)$",
-        r"(?:pid|id)[_-]?(\d+)",
+        r"^(-?\d+)_s\d+c\d+_(opt|sar)$",
+        r"^(-?\d+)_s\d+c\d+$",
+        r"^(-?\d+)[_-]",
+        r"^(-?\d+)$",
+        r"(?:pid|id)[_-]?(-?\d+)",
     ]
     for pattern in patterns:
         match = re.search(pattern, stem)
@@ -246,6 +246,8 @@ def main():
             out_dir = dst_root / rel
             for src_path in collect_images(source_root / rel):
                 old_pid = extract_pid(src_path)
+                if old_pid == -1:
+                    continue
                 if (
                     args.eval_common_only
                     and split in ("query", "gallery")

@@ -124,6 +124,8 @@ class MergedDataset(BaseImageDataset):
         pid_container = set()
         for img_path in sorted(img_paths):
             pid = self._extract_pid(img_path)
+            if pid == -1:
+                continue
             pid_container.add(pid)
         
         pid2label = {pid: label for label, pid in enumerate(pid_container)}
@@ -131,6 +133,8 @@ class MergedDataset(BaseImageDataset):
         
         for img_path in sorted(img_paths):
             pid = self._extract_pid(img_path)
+            if pid == -1:
+                continue
             camid = self._extract_camid(img_path)
             
             if relabel:
@@ -148,6 +152,8 @@ class MergedDataset(BaseImageDataset):
 
         for img_path in sorted(all_paths):
             pid = self._extract_pid(img_path)
+            if pid == -1:
+                continue
             pid_container.add(pid)
             
             modality = self._extract_modality(img_path)
@@ -255,11 +261,11 @@ class MergedDataset(BaseImageDataset):
         normalized = name_without_ext.lower()
         
         patterns = [
-            r'^(\d+)_s\d+c\d+_(opt|sar)$',
-            r'^(\d+)_s\d+c\d+$',
-            r'^(\d+)[_-]',
-            r'^(\d+)$',
-            r'(?:pid|id)[_-]?(\d+)',
+            r'^(-?\d+)_s\d+c\d+_(opt|sar)$',
+            r'^(-?\d+)_s\d+c\d+$',
+            r'^(-?\d+)[_-]',
+            r'^(-?\d+)$',
+            r'(?:pid|id)[_-]?(-?\d+)',
         ]
         for pattern in patterns:
             match = re.search(pattern, normalized)
