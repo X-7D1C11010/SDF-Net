@@ -21,7 +21,11 @@ DEFAULT_DATASETS = [
 OPT_TOKENS = {"opt", "optical", "rgb", "visible", "vis"}
 SAR_TOKENS = {"sar", "radar"}
 MODALITY_PATTERN = re.compile(
-    r"(^|[_\-.])(optical|opt|rgb|visible|vis|sar|radar)(?=$|[_\-.])",
+    r"(^|[_\-.])(optical|opt|rgb|visible|vis|sar|radar)(\d*)(?=$|[_\-.])",
+    flags=re.IGNORECASE,
+)
+MODALITY_PREFIX_PATTERN = re.compile(
+    r"^(optical|opt|rgb|visible|vis|sar|radar)(\d*)$",
     flags=re.IGNORECASE,
 )
 
@@ -69,6 +73,16 @@ def infer_modality(relative_path):
     tokens = set(tokenize(relative_path.as_posix()))
     has_opt = bool(tokens & OPT_TOKENS)
     has_sar = bool(tokens & SAR_TOKENS)
+
+    # Some datasets encode modality as opt1.png/sar1.png without separators.
+    stem = relative_path.stem.lower()
+    prefix_match = MODALITY_PREFIX_PATTERN.fullmatch(stem)
+    if prefix_match:
+        prefix = prefix_match.group(1).lower()
+        if prefix in OPT_TOKENS:
+            has_opt = True
+        elif prefix in SAR_TOKENS:
+            has_sar = True
     if has_opt and has_sar:
         return "ambiguous"
     if has_opt:
@@ -81,7 +95,9 @@ def infer_modality(relative_path):
 def normalize_pair_component(component):
     if component.lower() in OPT_TOKENS | SAR_TOKENS:
         return ""
-    cleaned = MODALITY_PATTERN.sub(lambda match: match.group(1), component.lower())
+    cleaned = MODALITY_PATTERN.sub(
+        lambda match: match.group(1) + match.group(3), component.lower()
+    )
     cleaned = re.sub(r"[_\-.]+", "_", cleaned).strip("_")
     return cleaned
 
