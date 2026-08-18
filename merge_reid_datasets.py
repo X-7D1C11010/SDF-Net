@@ -46,6 +46,14 @@ def parse_args():
         action="store_true",
         help="Remove dst_root before writing. Refuses to overwrite any source root.",
     )
+    parser.add_argument(
+        "--eval_common_only",
+        action="store_true",
+        help=(
+            "Keep only evaluation PIDs present in both query and gallery for each "
+            "source. Training images are not affected."
+        ),
+    )
     parser.add_argument("--dry_run", action="store_true", help="Print planned merge without writing files.")
     return parser.parse_args()
 
@@ -164,6 +172,7 @@ def format_summary(stats, pid_map, intersections, args, sources):
     lines.append(f"Output root: {args.dst_root}")
     lines.append(f"Copy mode:   {args.copy_mode}")
     lines.append(f"Dry run:     {args.dry_run}")
+    lines.append(f"Eval common: {args.eval_common_only}")
     lines.append("")
     lines.append("[sources]")
     for name, root in sources:
@@ -205,6 +214,19 @@ def main():
 
     safe_prepare_output(dst_root, source_roots, args.overwrite, args.dry_run)
 
+    common_eval_pids = {}
+    if args.eval_common_only:
+        for source_name, source_root in source_roots:
+            query_pids = {
+                extract_pid(path)
+                for path in collect_images(source_root / SPLITS["query"])
+            }
+            gallery_pids = {
+                extract_pid(path)
+                for path in collect_images(source_root / SPLITS["gallery"])
+            }
+            common_eval_pids[source_name] = query_pids & gallery_pids
+
     pid_map = {}
     next_pid = int(args.pid_start)
     next_img_id = 1
@@ -224,6 +246,12 @@ def main():
             out_dir = dst_root / rel
             for src_path in collect_images(source_root / rel):
                 old_pid = extract_pid(src_path)
+                if (
+                    args.eval_common_only
+                    and split in ("query", "gallery")
+                    and old_pid not in common_eval_pids[source_name]
+                ):
+                    continue
                 modality = extract_modality(src_path)
                 new_pid = map_pid(source_name, old_pid)
                 ext = src_path.suffix.lower()

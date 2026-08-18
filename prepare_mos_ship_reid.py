@@ -1,7 +1,9 @@
 import argparse
 import csv
 import os
+import shutil
 from collections import Counter, defaultdict
+from pathlib import Path
 
 from PIL import Image, ImageDraw
 
@@ -414,15 +416,26 @@ def partition_to_folder(partition):
     raise ValueError(f"Unknown partition: {partition}")
 
 
-def ensure_output_dirs(dst_root, overwrite):
-    if os.path.exists(dst_root) and not overwrite:
-        pass
+def ensure_output_dirs(dst_root, overwrite, src_root):
+    dst = Path(dst_root).resolve()
+    src = Path(src_root).resolve()
+    if dst == src or src in dst.parents or dst in src.parents:
+        raise ValueError(
+            "dst_root must be separate from src_root, not the same path, a parent, or a child."
+        )
+    if dst.exists() and any(dst.iterdir()):
+        if not overwrite:
+            raise FileExistsError(
+                f"Output directory is not empty: {dst}. Use a new path or --overwrite."
+            )
+        shutil.rmtree(dst)
     for folder in ("bounding_box_train", "query", "bounding_box_test"):
-        os.makedirs(os.path.join(dst_root, folder), exist_ok=True)
+        (dst / folder).mkdir(parents=True, exist_ok=True)
 
 
 def write_outputs(args, records):
-    ensure_output_dirs(args.dst_root, args.overwrite)
+    if not args.dry_run:
+        ensure_output_dirs(args.dst_root, args.overwrite, args.src_root)
     pid_map = make_pid_map(records, args.pid_start)
     manifest_rows = []
     image_seq = args.image_id_start

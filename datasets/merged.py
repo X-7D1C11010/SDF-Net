@@ -1,5 +1,5 @@
 # encoding: utf-8
-import glob
+import os
 import os.path as osp
 from .bases import BaseImageDataset
 
@@ -233,13 +233,18 @@ class MergedDataset(BaseImageDataset):
 
     @staticmethod
     def _collect_image_paths(dir_path, recursive=False):
-        patterns = ("*.jpg", "*.jpeg", "*.png")
+        image_exts = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
         img_paths = []
-        for pattern in patterns:
-            if recursive:
-                img_paths.extend(glob.glob(osp.join(dir_path, "**", pattern), recursive=True))
-            else:
-                img_paths.extend(glob.glob(osp.join(dir_path, pattern)))
+        if recursive:
+            for root, _, filenames in os.walk(dir_path):
+                for filename in filenames:
+                    if osp.splitext(filename)[1].lower() in image_exts:
+                        img_paths.append(osp.join(root, filename))
+        elif osp.isdir(dir_path):
+            for filename in os.listdir(dir_path):
+                img_path = osp.join(dir_path, filename)
+                if osp.isfile(img_path) and osp.splitext(filename)[1].lower() in image_exts:
+                    img_paths.append(img_path)
         return sorted(set(img_paths))
 
     def _extract_pid(self, img_path):
