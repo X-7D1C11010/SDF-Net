@@ -29,6 +29,7 @@ def parse_args():
 
 def summarize_split(name, split, dataset):
     pids = [pid for _, pid, _, _ in split]
+    raw_pids = [dataset._extract_pid(path) for path, _, _, _ in split]
     cams = [camid for _, _, camid, _ in split]
     modalities = [dataset._extract_modality(path) for path, _, _, _ in split]
     per_pid = Counter(pids)
@@ -36,6 +37,8 @@ def summarize_split(name, split, dataset):
     print(f"\n[{name}]")
     print(f"  images:     {len(split)}")
     print(f"  ids:        {len(set(pids))}")
+    if set(raw_pids) != set(pids):
+        print(f"  raw ids:    {len(set(raw_pids))} (training labels are relabeled on load)")
     print(f"  cameras:    {dict(Counter(cams))}")
     print(f"  modalities: {dict(Counter(modalities))}")
     if per_pid:
@@ -46,7 +49,7 @@ def summarize_split(name, split, dataset):
             f"median={np.median(counts):.1f}, mean={counts.mean():.1f}, "
             f"p75={np.percentile(counts, 75):.1f}, max={counts.max()}"
         )
-    return set(pids), per_pid
+    return set(pids), set(raw_pids), per_pid
 
 
 def summarize_pairs(dataset):
@@ -154,24 +157,24 @@ def main():
     )
 
     if args.eval_only:
-        train_ids, train_counts = set(), Counter()
+        train_ids, train_raw_ids, train_counts = set(), set(), Counter()
         print("\n[train]")
         print("  skipped:    eval_only=True")
     else:
-        train_ids, train_counts = summarize_split("train", dataset.train, dataset)
-    query_ids, query_counts = summarize_split("query", dataset.query, dataset)
-    gallery_ids, gallery_counts = summarize_split("gallery", dataset.gallery, dataset)
+        train_ids, train_raw_ids, train_counts = summarize_split("train", dataset.train, dataset)
+    query_ids, query_raw_ids, query_counts = summarize_split("query", dataset.query, dataset)
+    gallery_ids, gallery_raw_ids, gallery_counts = summarize_split("gallery", dataset.gallery, dataset)
     if not args.eval_only:
         summarize_pairs(dataset)
 
-    print("\n[ID intersections]")
-    print_intersection("query & gallery", query_ids, gallery_ids)
+    print("\n[raw ID intersections]")
+    print_intersection("query & gallery", query_raw_ids, gallery_raw_ids)
     if not args.eval_only:
-        print_intersection("train & query", train_ids, query_ids)
-        print_intersection("train & gallery", train_ids, gallery_ids)
+        print_intersection("train & query", train_raw_ids, query_raw_ids)
+        print_intersection("train & gallery", train_raw_ids, gallery_raw_ids)
 
-    missing_query = sorted(list(query_ids - gallery_ids))[:20]
-    missing_gallery = sorted(list(gallery_ids - query_ids))[:20]
+    missing_query = sorted(list(query_raw_ids - gallery_raw_ids))[:20]
+    missing_gallery = sorted(list(gallery_raw_ids - query_raw_ids))[:20]
     if missing_query:
         print(f"  query ids absent from gallery, first 20: {missing_query}")
     if missing_gallery:
@@ -181,7 +184,7 @@ def main():
         low_train_ids = [pid for pid, count in train_counts.items() if count < 2]
         if low_train_ids:
             print(f"\n[warning] train IDs with <2 images: {len(low_train_ids)}; first 20: {low_train_ids[:20]}")
-    if len(query_ids & gallery_ids) == 0:
+    if len(query_raw_ids & gallery_raw_ids) == 0:
         print("\n[error] query and gallery have no overlapping IDs; ReID metrics are invalid.")
     if not args.eval_only and len(dataset.train_pair) == 0:
         print("\n[error] no opt/sar training pairs were found; cross-modal training is invalid.")

@@ -54,6 +54,15 @@ def parse_args():
             "source. Training images are not affected."
         ),
     )
+    parser.add_argument(
+        "--eval_protocol",
+        default="all",
+        choices=["all", "opt_to_sar", "sar_to_opt"],
+        help=(
+            "Evaluation modality protocol. opt_to_sar keeps optical query and SAR "
+            "gallery; sar_to_opt keeps SAR query and optical gallery."
+        ),
+    )
     parser.add_argument("--dry_run", action="store_true", help="Print planned merge without writing files.")
     return parser.parse_args()
 
@@ -131,6 +140,20 @@ def extract_modality(path):
     raise ValueError(f"Cannot parse modality from path: {path}")
 
 
+def keep_for_eval_protocol(split, modality, protocol):
+    if split == "train" or protocol == "all":
+        return True
+    if protocol == "opt_to_sar":
+        return (split == "query" and modality == "opt") or (
+            split == "gallery" and modality == "sar"
+        )
+    if protocol == "sar_to_opt":
+        return (split == "query" and modality == "sar") or (
+            split == "gallery" and modality == "opt"
+        )
+    raise ValueError(f"Unknown eval protocol: {protocol}")
+
+
 def safe_prepare_output(dst_root, source_roots, overwrite, dry_run):
     dst = Path(dst_root)
     dst_abs = dst.resolve()
@@ -173,6 +196,7 @@ def format_summary(stats, pid_map, intersections, args, sources):
     lines.append(f"Copy mode:   {args.copy_mode}")
     lines.append(f"Dry run:     {args.dry_run}")
     lines.append(f"Eval common: {args.eval_common_only}")
+    lines.append(f"Eval protocol: {args.eval_protocol}")
     lines.append("")
     lines.append("[sources]")
     for name, root in sources:
@@ -220,10 +244,16 @@ def main():
             query_pids = {
                 extract_pid(path)
                 for path in collect_images(source_root / SPLITS["query"])
+                if keep_for_eval_protocol(
+                    "query", extract_modality(path), args.eval_protocol
+                )
             }
             gallery_pids = {
                 extract_pid(path)
                 for path in collect_images(source_root / SPLITS["gallery"])
+                if keep_for_eval_protocol(
+                    "gallery", extract_modality(path), args.eval_protocol
+                )
             }
             common_eval_pids[source_name] = query_pids & gallery_pids
 
@@ -248,13 +278,15 @@ def main():
                 old_pid = extract_pid(src_path)
                 if old_pid == -1:
                     continue
+                modality = extract_modality(src_path)
+                if not keep_for_eval_protocol(split, modality, args.eval_protocol):
+                    continue
                 if (
                     args.eval_common_only
                     and split in ("query", "gallery")
                     and old_pid not in common_eval_pids[source_name]
                 ):
                     continue
-                modality = extract_modality(src_path)
                 new_pid = map_pid(source_name, old_pid)
                 ext = src_path.suffix.lower()
                 out_name = f"{new_pid:04d}_s{next_img_id}c001_{modality}{ext}"
